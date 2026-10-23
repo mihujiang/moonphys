@@ -1,0 +1,35 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "mihujiang/moonphys/render"
+
+import {
+  "mihujiang/moonphys",
+}
+
+// Values
+pub fn frame_svg(@moonphys.World, SvgOptions) -> String
+
+pub fn svg_document(@moonphys.World, SvgOptions) -> String
+
+// Errors
+
+// Types and methods
+pub struct SvgOptions {
+  mut width : Int
+  mut height : Int
+  mut scale : Double
+  mut center_x : Double
+  mut center_y : Double
+  mut background : String
+  mut grid : Bool
+}
+pub fn SvgOptions::new() -> Self
+pub fn SvgOptions::with_background(Self, String) -> Self
+pub fn SvgOptions::with_center(Self, Double, Double) -> Self
+pub fn SvgOptions::with_grid(Self, Bool) -> Self
+pub fn SvgOptions::with_scale(Self, Double) -> Self
+pub fn SvgOptions::with_size(Self, Int, Int) -> Self
+
+// Type aliases
+
+// Traits
+

@@ -1,0 +1,304 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "mihujiang/moonphys"
+
+// Values
+pub const K_EPSILON : Double = 1.0e-9
+
+pub const K_PI : Double = 3.141592653589793
+
+pub const LINEAR_SLOP : Double = 0.005
+
+pub fn clamp(Double, Double, Double) -> Double
+
+pub fn collide(Shape, Transform, Shape, Transform) -> Array[ContactPoint]
+
+pub fn cross_scalar(Double, Vec2) -> Vec2
+
+// Errors
+
+// Types and methods
+pub struct Aabb {
+  min : Vec2
+  max : Vec2
+}
+pub fn Aabb::center(Self) -> Vec2
+pub fn Aabb::contains_point(Self, Vec2) -> Bool
+pub fn Aabb::expanded(Self, Double) -> Self
+pub fn Aabb::height(Self) -> Double
+pub fn Aabb::max(Self) -> Vec2
+pub fn Aabb::min(Self) -> Vec2
+pub fn Aabb::new(Vec2, Vec2) -> Self
+pub fn Aabb::overlaps(Self, Self) -> Bool
+pub fn Aabb::union(Self, Self) -> Self
+pub fn Aabb::width(Self) -> Double
+
+pub struct Arbiter {
+  body_a : Int
+  body_b : Int
+  mut contacts : Array[ContactPoint]
+  mut normal_impulses : Array[Double]
+  mut tangent_impulses : Array[Double]
+  mut mass_normal : Array[Double]
+  mut mass_tangent : Array[Double]
+  mut bias : Array[Double]
+  mut restitution_bias : Array[Double]
+  mut friction : Double
+  mut restitution : Double
+}
+pub fn Arbiter::body_a(Self) -> Int
+pub fn Arbiter::body_b(Self) -> Int
+pub fn Arbiter::contacts(Self) -> Array[ContactPoint]
+pub fn Arbiter::is_touching(Self) -> Bool
+pub fn Arbiter::new(Int, Int, Array[ContactPoint], Double, Double) -> Self
+pub fn Arbiter::pre_step(Self, Array[Body], Double) -> Unit
+pub fn Arbiter::solve_velocity(Self, Array[Body]) -> Unit
+pub fn Arbiter::total_normal_impulse(Self) -> Double
+pub fn Arbiter::update(Self, Array[ContactPoint], Double, Double) -> Unit
+
+pub struct Body {
+  body_type : BodyType
+  shape : Shape
+  mut position : Vec2
+  mut rotation : Double
+  mut velocity : Vec2
+  mut angular_velocity : Double
+  mut force : Vec2
+  mut torque : Double
+  mut mass : Double
+  mut inv_mass : Double
+  mut inertia : Double
+  mut inv_inertia : Double
+  mut friction : Double
+  mut restitution : Double
+  mut linear_damping : Double
+  mut angular_damping : Double
+  mut allow_sleep : Bool
+  mut awake : Bool
+  mut sleep_time : Double
+  mut user_data : Int
+  mut world_aabb : Aabb
+}
+pub fn Body::aabb(Self) -> Aabb
+pub fn Body::angular_velocity(Self) -> Double
+pub fn Body::apply_angular_impulse(Self, Double) -> Unit
+pub fn Body::apply_force(Self, Vec2) -> Unit
+pub fn Body::apply_impulse(Self, Vec2, Vec2) -> Unit
+pub fn Body::apply_torque(Self, Double) -> Unit
+pub fn Body::at(Self, Double, Double) -> Self
+pub fn Body::awake(Self) -> Bool
+pub fn Body::ball(Double) -> Self
+pub fn Body::box(Double, Double) -> Self
+pub fn Body::clear_forces(Self) -> Unit
+pub fn Body::contains_point(Self, Vec2) -> Bool
+pub fn Body::dynamic(Shape) -> Self
+pub fn Body::fixed(Shape) -> Self
+pub fn Body::friction(Self) -> Double
+pub fn Body::inertia(Self) -> Double
+pub fn Body::is_dynamic(Self) -> Bool
+pub fn Body::is_static(Self) -> Bool
+pub fn Body::kinetic_energy(Self) -> Double
+pub fn Body::local_to_world(Self, Vec2) -> Vec2
+pub fn Body::mass(Self) -> Double
+pub fn Body::new(Shape, BodyType) -> Self
+pub fn Body::point_velocity(Self, Vec2) -> Vec2
+pub fn Body::position(Self) -> Vec2
+pub fn Body::restitution(Self) -> Double
+pub fn Body::rotation(Self) -> Double
+pub fn Body::set_density(Self, Double) -> Unit
+pub fn Body::shape(Self) -> Shape
+pub fn Body::sleep(Self) -> Unit
+pub fn Body::sync_aabb(Self) -> Unit
+pub fn Body::transform(Self) -> Transform
+pub fn Body::user_data(Self) -> Int
+pub fn Body::velocity(Self) -> Vec2
+pub fn Body::wake(Self) -> Unit
+pub fn Body::with_allow_sleep(Self, Bool) -> Self
+pub fn Body::with_angular_velocity(Self, Double) -> Self
+pub fn Body::with_damping(Self, Double, Double) -> Self
+pub fn Body::with_density(Self, Double) -> Self
+pub fn Body::with_friction(Self, Double) -> Self
+pub fn Body::with_restitution(Self, Double) -> Self
+pub fn Body::with_rotation(Self, Double) -> Self
+pub fn Body::with_user_data(Self, Int) -> Self
+pub fn Body::with_velocity(Self, Double, Double) -> Self
+pub fn Body::world_to_local(Self, Vec2) -> Vec2
+
+pub struct BodySnapshot {
+  position : Vec2
+  rotation : Double
+  shape : Shape
+  asleep : Bool
+  user_data : Int
+}
+pub fn BodySnapshot::asleep(Self) -> Bool
+pub fn BodySnapshot::position(Self) -> Vec2
+pub fn BodySnapshot::rotation(Self) -> Double
+pub fn BodySnapshot::shape(Self) -> Shape
+pub fn BodySnapshot::user_data(Self) -> Int
+
+pub enum BodyType {
+  Static
+  Dynamic
+}
+
+pub struct ContactPoint {
+  position : Vec2
+  normal : Vec2
+  separation : Double
+  feature_id : Int
+}
+pub fn ContactPoint::feature_id(Self) -> Int
+pub fn ContactPoint::normal(Self) -> Vec2
+pub fn ContactPoint::position(Self) -> Vec2
+pub fn ContactPoint::separation(Self) -> Double
+
+pub struct DistanceJoint {
+  body_a : Int
+  body_b : Int
+  local_anchor_a : Vec2
+  local_anchor_b : Vec2
+  length : Double
+  mut impulse : Double
+  mut mass : Double
+  mut bias : Double
+}
+pub fn DistanceJoint::anchors(Self, Array[Body]) -> (Vec2, Vec2)
+pub fn DistanceJoint::between(World, Int, Int) -> Self
+pub fn DistanceJoint::length(Self) -> Double
+pub fn DistanceJoint::new(Int, Int, Vec2, Vec2, Double) -> Self
+pub fn DistanceJoint::pre_step(Self, Array[Body], Double) -> Unit
+pub fn DistanceJoint::solve_velocity(Self, Array[Body]) -> Unit
+
+pub enum Joint {
+  Distance(DistanceJoint)
+  Revolve(RevolveJoint)
+}
+pub fn Joint::pre_step(Self, Array[Body], Double) -> Unit
+pub fn Joint::solve_velocity(Self, Array[Body]) -> Unit
+
+pub struct MassData {
+  mass : Double
+  inertia : Double
+  center : Vec2
+}
+pub fn MassData::center(Self) -> Vec2
+pub fn MassData::inertia(Self) -> Double
+pub fn MassData::mass(Self) -> Double
+
+pub struct Mat22 {
+  c1 : Vec2
+  c2 : Vec2
+}
+pub fn Mat22::abs(Self) -> Self
+pub fn Mat22::from_angle(Double) -> Self
+pub fn Mat22::identity() -> Self
+pub fn Mat22::mul_vec(Self, Vec2) -> Vec2
+pub fn Mat22::transpose(Self) -> Self
+
+pub struct RevolveJoint {
+  body_a : Int
+  body_b : Int
+  local_anchor_a : Vec2
+  local_anchor_b : Vec2
+  mut impulse : Vec2
+  mut k11 : Double
+  mut k12 : Double
+  mut k22 : Double
+  mut bias : Vec2
+}
+pub fn RevolveJoint::at(World, Int, Int, Vec2) -> Self
+pub fn RevolveJoint::new(Int, Int, Vec2, Vec2) -> Self
+pub fn RevolveJoint::pre_step(Self, Array[Body], Double) -> Unit
+pub fn RevolveJoint::solve_velocity(Self, Array[Body]) -> Unit
+
+pub enum Shape {
+  Circle(Double)
+  Polygon(Array[Vec2])
+}
+pub fn Shape::aabb(Self, Transform) -> Aabb
+pub fn Shape::area(Self) -> Double
+pub fn Shape::box(Double, Double) -> Self
+pub fn Shape::circle(Double) -> Self
+pub fn Shape::contains_local_point(Self, Vec2) -> Bool
+pub fn Shape::convex(Array[Vec2]) -> Self
+pub fn Shape::edge_normal(Self, Int) -> Vec2
+pub fn Shape::is_circle(Self) -> Bool
+pub fn Shape::mass_data(Self, Double) -> MassData
+pub fn Shape::radius(Self) -> Double
+pub fn Shape::vertices(Self) -> Array[Vec2]
+
+pub struct Transform {
+  position : Vec2
+  rotation : Double
+}
+pub fn Transform::apply(Self, Vec2) -> Vec2
+pub fn Transform::apply_inv(Self, Vec2) -> Vec2
+pub fn Transform::apply_inv_vector(Self, Vec2) -> Vec2
+pub fn Transform::apply_vector(Self, Vec2) -> Vec2
+pub fn Transform::new(Vec2, Double) -> Self
+
+pub struct Vec2 {
+  x : Double
+  y : Double
+}
+pub fn Vec2::abs(Self) -> Self
+pub fn Vec2::cross(Self, Self) -> Double
+pub fn Vec2::cross_scalar(Self, Double) -> Self
+pub fn Vec2::dot(Self, Self) -> Double
+pub fn Vec2::length(Self) -> Double
+pub fn Vec2::length_sq(Self) -> Double
+pub fn Vec2::max(Self, Self) -> Self
+pub fn Vec2::min(Self, Self) -> Self
+pub fn Vec2::new(Double, Double) -> Self
+pub fn Vec2::normalize(Self) -> Self
+pub fn Vec2::normalize_or(Self, Self) -> Self
+pub fn Vec2::perp(Self) -> Self
+pub fn Vec2::rotate(Self, Double) -> Self
+pub fn Vec2::rotate_by(Self, Double, Double) -> Self
+pub fn Vec2::rotate_inv(Self, Double) -> Self
+pub fn Vec2::scale(Self, Double) -> Self
+pub fn Vec2::splat(Double) -> Self
+pub fn Vec2::x(Self) -> Double
+pub fn Vec2::y(Self) -> Double
+pub fn Vec2::zero() -> Self
+pub impl Add for Vec2
+pub impl Eq for Vec2
+pub impl Neg for Vec2
+pub impl Show for Vec2
+pub impl Sub for Vec2
+
+pub struct World {
+  bodies : Array[Body]
+  mut arbiters : Array[Arbiter]
+  joints : Array[Joint]
+  mut gravity : Vec2
+  mut velocity_iterations : Int
+  mut time : Double
+  mut sleep_enabled : Bool
+}
+pub fn World::add_body(Self, Body) -> Int
+pub fn World::add_distance_joint(Self, Int, Int) -> Unit
+pub fn World::add_joint(Self, Joint) -> Unit
+pub fn World::add_revolve_joint(Self, Int, Int, Vec2) -> Unit
+pub fn World::add_revolve_joint_local(Self, Int, Int, Vec2, Vec2) -> Unit
+pub fn World::arbiter_count(Self) -> Int
+pub fn World::body(Self, Int) -> Body
+pub fn World::body_count(Self) -> Int
+pub fn World::contact_count(Self) -> Int
+pub fn World::gravity(Self) -> Vec2
+pub fn World::new() -> Self
+pub fn World::run(Self, Int, Double) -> Unit
+pub fn World::set_gravity(Self, Vec2) -> Unit
+pub fn World::set_sleep_enabled(Self, Bool) -> Unit
+pub fn World::set_velocity_iterations(Self, Int) -> Unit
+pub fn World::snapshot(Self) -> Array[BodySnapshot]
+pub fn World::step(Self, Double) -> Unit
+pub fn World::time(Self) -> Double
+pub fn World::total_kinetic_energy(Self) -> Double
+pub fn World::wake_all(Self) -> Unit
+pub fn World::with_gravity(Double, Double) -> Self
+
+// Type aliases
+
+// Traits
+
