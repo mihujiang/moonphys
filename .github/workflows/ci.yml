@@ -36,7 +36,19 @@ jobs:
           fi
 
       - name: Format
-        run: moon fmt --check
+        shell: bash
+        run: |
+          moon fmt
+          if ! git diff --quiet; then
+            # Show what the canonical formatter changed as annotations.
+            git --no-pager diff -U1 \
+              | grep -E '^(diff --git|[-+][^-+])' \
+              | head -n 20 \
+              | while IFS= read -r line; do
+                  echo "::error::fmt ${line//%/%25}"
+                done
+            exit 1
+          fi
 
       - name: Test
         run: moon test
