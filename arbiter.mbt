@@ -7,6 +7,11 @@ const BIAS_FACTOR : Double = 0.2
 const RESTITUTION_THRESHOLD : Double = 1.0
 
 ///|
+/// Farthest penetration the position bias tries to remove in one step, in
+/// world units. Without this cap a deeply overlapping pair is launched apart.
+const MAX_CORRECTION : Double = 0.2
+
+///|
 /// Persistent contact constraints between two bodies.
 ///
 /// Impulses are accumulated and clamped, and are carried over to the next
@@ -157,9 +162,10 @@ pub fn Arbiter::pre_step(
     } else {
       0.0
     }
-    self.bias[i] = -BIAS_FACTOR *
-      inv_dt *
-      (contact.separation + LINEAR_SLOP).min(0.0)
+    let correction = (contact.separation + LINEAR_SLOP)
+      .max(-MAX_CORRECTION)
+      .min(0.0)
+    self.bias[i] = -BIAS_FACTOR * inv_dt * correction
     let relative = body_b.point_velocity(contact.position) -
       body_a.point_velocity(contact.position)
     let vn = relative.dot(normal)

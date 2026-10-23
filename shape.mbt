@@ -116,25 +116,56 @@ pub fn Shape::box(half_width : Double, half_height : Double) -> Shape {
 
 ///|
 /// Build a convex polygon, forcing counter-clockwise winding.
+///
+/// Duplicated and collinear vertices are dropped first, because a zero-length
+/// edge makes the edge normal undefined and would poison the solver.
 pub fn Shape::convex(vertices : Array[Vec2]) -> Shape {
-  if vertices.length() < 3 {
-    abort("Shape::convex needs at least 3 vertices")
+  let cleaned = remove_degenerate_vertices(vertices)
+  if cleaned.length() < 3 {
+    abort("Shape::convex needs at least 3 distinct, non-collinear vertices")
   }
-  let vs = if signed_area(vertices) < 0.0 {
-    reverse_vertices(vertices)
+  let vs = if signed_area(cleaned) < 0.0 {
+    reverse_vertices(cleaned)
   } else {
-    copy_vertices(vertices)
+    cleaned
   }
   Polygon(vs)
 }
 
 ///|
-fn copy_vertices(vertices : Array[Vec2]) -> Array[Vec2] {
-  let out : Array[Vec2] = []
+const VERTEX_EPSILON : Double = 1.0e-9
+
+///|
+/// Drop repeated vertices and vertices that lie on the straight line between
+/// their neighbours. Convexity itself is the caller's responsibility.
+fn remove_degenerate_vertices(vertices : Array[Vec2]) -> Array[Vec2] {
+  let deduped : Array[Vec2] = []
   for v in vertices {
-    out.push(v)
+    let n = deduped.length()
+    if n == 0 || (v - deduped[n - 1]).length() > VERTEX_EPSILON {
+      deduped.push(v)
+    }
   }
-  out
+  // The wrap-around edge can be degenerate as well.
+  let n = deduped.length()
+  if n > 1 && (deduped[0] - deduped[n - 1]).length() <= VERTEX_EPSILON {
+    ignore(deduped.pop())
+  }
+  let count = deduped.length()
+  if count < 3 {
+    return deduped
+  }
+  let kept : Array[Vec2] = []
+  for i in 0..<count {
+    let prev = deduped[(i + count - 1) % count]
+    let cur = deduped[i]
+    let next = deduped[(i + 1) % count]
+    let twice_area = (cur - prev).cross(next - cur)
+    if twice_area.abs() > VERTEX_EPSILON {
+      kept.push(cur)
+    }
+  }
+  kept
 }
 
 ///|
