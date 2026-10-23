@@ -104,7 +104,7 @@ moon run cmd/main --target js > docs/index.html
 2. **Five link chain · double pendulum** — 5 节链条与双摆，铰链约束在重力下的混沌运动。
 3. **Linear actuator · angular motor · soft rope** — 电动滑轨推箱、角马达带动的旋转臂与软弹簧绳、重力压在角限位上的跷跷板。
 
-在线预览：GitHub Pages 打开 `docs/index.html` 即可（仓库 Settings → Pages → Source 选 `main` + `/docs`）。
+在线预览：<https://mihujiang.github.io/moonphys/>。`docs/` 里的内容由 `.github/workflows/pages.yml` 在每次推送后自动部署（不需要在 Settings 里手动选 source）。
 
 ### 可交互 playground（wasm-gc）
 
