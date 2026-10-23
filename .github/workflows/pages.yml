@@ -1,9 +1,12 @@
 name: Pages
 
-# Publishes docs/ (the SVG demo plus the interactive playground) to GitHub
-# Pages. `enablement: true` lets the workflow create the Pages site itself on
-# first run, so the demo URL does not depend on someone clicking through
-# Settings → Pages.
+# Publishes docs/ (the SVG demo plus the interactive playground) to GitHub Pages.
+#
+# Creating the Pages site itself requires repo-admin rights, which the workflow
+# token does not have ("Resource not accessible by integration"), so this
+# workflow only deploys once Pages has been switched to "GitHub Actions" in
+# Settings → Pages. Until then it reports a notice and stays green instead of
+# failing on every push.
 on:
   push:
     branches: [main]
@@ -31,16 +34,30 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v5
 
+      - name: Check whether Pages is enabled
+        id: probe
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if curl -sf -H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/vnd.github+json" \
+              "https://api.github.com/repos/${GITHUB_REPOSITORY}/pages" > /dev/null; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "::notice title=Pages 未启用::Settings → Pages → Source 选 \"GitHub Actions\"，之后重跑本工作流即可发布 docs/"
+          fi
+
       - name: Configure Pages
+        if: steps.probe.outputs.enabled == 'true'
         uses: actions/configure-pages@v5
-        with:
-          enablement: true
 
       - name: Upload docs/ as the site
+        if: steps.probe.outputs.enabled == 'true'
         uses: actions/upload-pages-artifact@v3
         with:
           path: docs
 
       - name: Deploy to GitHub Pages
         id: deployment
+        if: steps.probe.outputs.enabled == 'true'
         uses: actions/deploy-pages@v4
