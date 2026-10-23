@@ -2,18 +2,20 @@
 const FRAME : Double = 1.0 / 60.0
 
 ///|
-fn ground(world : World) -> Int {
-  world.add_body(Body::fixed(Shape::box(20.0, 0.5)).at(0.0, -0.5))
+fn ground(world : @moonphys.World) -> Int {
+  world.add_body(
+    @moonphys.Body::fixed(@moonphys.Shape::box(20.0, 0.5)).at(0.0, -0.5),
+  )
 }
 
 ///|
-fn stack_scene() -> World {
-  let world = World::new()
+fn stack_scene() -> @moonphys.World {
+  let world = @moonphys.World::new()
   ignore(ground(world))
   for i in 0..<6 {
     ignore(
       world.add_body(
-        Body::box(0.5, 0.5)
+        @moonphys.Body::box(0.5, 0.5)
         .at(0.0, 0.5 + i.to_double())
         .with_friction(0.6)
         .with_restitution(0.0),
@@ -25,8 +27,8 @@ fn stack_scene() -> World {
 
 ///|
 test "free fall matches analytic solution" {
-  let world = World::with_gravity(0.0, -10.0)
-  let ball = world.add_body(Body::ball(0.1).at(0.0, 0.0))
+  let world = @moonphys.World::with_gravity(0.0, -10.0)
+  let ball = world.add_body(@moonphys.Body::ball(0.1).at(0.0, 0.0))
   world.run(60, FRAME)
   let expected_velocity = -10.0
   let position = world.body(ball)
@@ -36,9 +38,11 @@ test "free fall matches analytic solution" {
 
 ///|
 test "ball comes to rest on the ground" {
-  let world = World::new()
+  let world = @moonphys.World::new()
   ignore(ground(world))
-  let ball = world.add_body(Body::ball(0.5).at(0.0, 3.0).with_restitution(0.0))
+  let ball = world.add_body(
+    @moonphys.Body::ball(0.5).at(0.0, 3.0).with_restitution(0.0),
+  )
   world.run(300, FRAME)
   let body = world.body(ball)
   assert_true(approx(body.position().y(), 0.5, 0.05))
@@ -47,10 +51,13 @@ test "ball comes to rest on the ground" {
 
 ///|
 test "box comes to rest on the ground without sinking" {
-  let world = World::new()
+  let world = @moonphys.World::new()
   ignore(ground(world))
   let bin = world.add_body(
-    Body::box(0.5, 0.5).at(0.0, 4.0).with_restitution(0.0).with_friction(0.5),
+    @moonphys.Body::box(0.5, 0.5)
+    .at(0.0, 4.0)
+    .with_restitution(0.0)
+    .with_friction(0.5),
   )
   world.run(300, FRAME)
   let body = world.body(bin)
@@ -60,13 +67,13 @@ test "box comes to rest on the ground without sinking" {
 
 ///|
 test "stack of six boxes stays put" {
-  let world = World::new()
+  let world = @moonphys.World::new()
   ignore(ground(world))
   let ids : Array[Int] = []
   for i in 0..<6 {
     ids.push(
       world.add_body(
-        Body::box(0.5, 0.5)
+        @moonphys.Body::box(0.5, 0.5)
         .at(0.0, 0.5 + i.to_double())
         .with_friction(0.6)
         .with_restitution(0.0),
@@ -85,10 +92,14 @@ test "stack of six boxes stays put" {
 
 ///|
 test "restitution removes speed" {
-  let world = World::with_gravity(0.0, 0.0)
-  ignore(world.add_body(Body::fixed(Shape::box(10.0, 0.5)).at(0.0, -0.5)))
+  let world = @moonphys.World::with_gravity(0.0, 0.0)
+  ignore(
+    world.add_body(
+      @moonphys.Body::fixed(@moonphys.Shape::box(10.0, 0.5)).at(0.0, -0.5),
+    ),
+  )
   let ball = world.add_body(
-    Body::ball(0.5)
+    @moonphys.Body::ball(0.5)
     .at(0.0, 1.0)
     .with_velocity(0.0, -5.0)
     .with_restitution(0.5)
@@ -117,9 +128,11 @@ test "identical scenes replay bit for bit" {
 
 ///|
 test "sleeping bodies are reused until something moves" {
-  let world = World::new()
+  let world = @moonphys.World::new()
   ignore(ground(world))
-  let ball = world.add_body(Body::ball(0.5).at(0.0, 2.0).with_restitution(0.0))
+  let ball = world.add_body(
+    @moonphys.Body::ball(0.5).at(0.0, 2.0).with_restitution(0.0),
+  )
   world.run(300, FRAME)
   assert_true(world.body(ball).awake() == false)
   assert_true(world.contact_count() > 0)
@@ -127,18 +140,20 @@ test "sleeping bodies are reused until something moves" {
 
 ///|
 test "broadphase skips distant bodies" {
-  let world = World::with_gravity(0.0, 0.0)
-  ignore(world.add_body(Body::ball(0.5).at(-100.0, 0.0)))
-  ignore(world.add_body(Body::ball(0.5).at(100.0, 0.0)))
+  let world = @moonphys.World::with_gravity(0.0, 0.0)
+  ignore(world.add_body(@moonphys.Body::ball(0.5).at(-100.0, 0.0)))
+  ignore(world.add_body(@moonphys.Body::ball(0.5).at(100.0, 0.0)))
   world.run(10, FRAME)
   assert_eq(world.arbiter_count(), 0)
 }
 
 ///|
 test "impulse changes velocity" {
-  let world = World::with_gravity(0.0, 0.0)
-  let ball = world.add_body(Body::ball(0.5).at(0.0, 0.0))
-  world.body(ball).apply_impulse(Vec2::new(2.0, 0.0), Vec2::zero())
+  let world = @moonphys.World::with_gravity(0.0, 0.0)
+  let ball = world.add_body(@moonphys.Body::ball(0.5).at(0.0, 0.0))
+  world
+  .body(ball)
+  .apply_impulse(@moonphys.Vec2::new(2.0, 0.0), @moonphys.Vec2::zero())
   let mass = world.body(ball).mass()
   assert_true(approx(world.body(ball).velocity().x(), 2.0 / mass, 1.0e-9))
 }
