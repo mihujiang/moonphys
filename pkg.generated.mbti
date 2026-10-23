@@ -242,22 +242,28 @@ pub struct Vec2 {
   y : Double
 }
 pub fn Vec2::abs(Self) -> Self
+pub fn Vec2::add(Self, Self) -> Self
 pub fn Vec2::cross(Self, Self) -> Double
 pub fn Vec2::cross_scalar(Self, Double) -> Self
 pub fn Vec2::dot(Self, Self) -> Double
+pub fn Vec2::equal(Self, Self) -> Bool
 pub fn Vec2::length(Self) -> Double
 pub fn Vec2::length_sq(Self) -> Double
 pub fn Vec2::max(Self, Self) -> Self
 pub fn Vec2::min(Self, Self) -> Self
+pub fn Vec2::neg(Self) -> Self
 pub fn Vec2::new(Double, Double) -> Self
 pub fn Vec2::normalize(Self) -> Self
 pub fn Vec2::normalize_or(Self, Self) -> Self
+pub fn Vec2::not_equal(Self, Self) -> Bool
 pub fn Vec2::perp(Self) -> Self
 pub fn Vec2::rotate(Self, Double) -> Self
 pub fn Vec2::rotate_by(Self, Double, Double) -> Self
 pub fn Vec2::rotate_inv(Self, Double) -> Self
 pub fn Vec2::scale(Self, Double) -> Self
 pub fn Vec2::splat(Double) -> Self
+pub fn Vec2::sub(Self, Self) -> Self
+pub fn Vec2::to_string(Self) -> String
 pub fn Vec2::x(Self) -> Double
 pub fn Vec2::y(Self) -> Double
 pub fn Vec2::zero() -> Self

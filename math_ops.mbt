@@ -4,9 +4,17 @@ pub impl Add for Vec2 with fn add(self, other) {
 }
 
 ///|
+/// Promote the trait method to a regular method explicitly: the implicit
+/// promotion of `impl` methods is deprecated in newer toolchains.
+pub extend Vec2 with Add::{add}
+
+///|
 pub impl Sub for Vec2 with fn sub(self, other) {
   Vec2::new(self.x - other.x, self.y - other.y)
 }
+
+///|
+pub extend Vec2 with Sub::{sub}
 
 ///|
 pub impl Neg for Vec2 with fn neg(self) {
@@ -14,14 +22,23 @@ pub impl Neg for Vec2 with fn neg(self) {
 }
 
 ///|
+pub extend Vec2 with Neg::{neg}
+
+///|
 pub impl Eq for Vec2 with fn equal(self, other) {
   self.x == other.x && self.y == other.y
 }
 
 ///|
+pub extend Vec2 with Eq::{equal, not_equal}
+
+///|
 pub impl Show for Vec2 with fn to_string(self) {
   "(\{self.x},\{self.y})"
 }
+
+///|
+pub extend Vec2 with Show::{to_string}
 
 ///|
 /// A 2x2 matrix stored as two column vectors.
