@@ -41,6 +41,7 @@ println(world.body(1).position().y()) // 0.5：稳稳落在有厚度的地面上
 | 睡眠 | 线/角速度低于阈值持续 0.5s 后休眠，接触对的动态体互相唤醒 |
 | 确定性 | 无随机、无哈希迭代、固定步长 + 稳定排序 → 两次运行逐位一致（有测试） |
 | 渲染 | `render` 包把世界快照输出为 SVG，带网格与配色，可逐帧拼成动画 |
+| 交互演示 | `playground/` 编译成 wasm-gc，导出 24 个纯数值 `pg_*` 函数，浏览器里拖拽刚体、点击施力 |
 
 ## 安装
 
@@ -104,6 +105,40 @@ moon run cmd/main --target js > docs/index.html
 3. **Linear actuator · angular motor · soft rope** — 电动滑轨推箱、角马达带动的旋转臂与软弹簧绳、重力压在角限位上的跷跷板。
 
 在线预览：GitHub Pages 打开 `docs/index.html` 即可（仓库 Settings → Pages → Source 选 `main` + `/docs`）。
+
+### 可交互 playground（wasm-gc）
+
+`docs/playground/` 是可以直接上手玩的版本：真正的 `moonphys` 编译成 wasm-gc 后在浏览器里跑，canvas 逐帧渲染，鼠标和滑块直接改物理状态。
+
+在线打开：`https://mihujiang.github.io/moonphys/playground/`。本地跑需要一个 HTTP 服务器（`file:` 协议下浏览器不允许取 `.wasm`）：
+
+```bash
+python -m http.server 8123        # 仓库根目录
+# 浏览器打开 http://127.0.0.1:8123/docs/playground/
+```
+
+操作：
+
+| 输入 | 效果 |
+| --- | --- |
+| 按住刚体拖动 | 用临界阻尼弹簧把刚体拉向光标（`pg_grab_*`），拖动中照样参与碰撞 |
+| 单击空白处 | 半径 3 m 的衰减冲量（`pg_blast`） |
+| 滚轮 | 缩放视图 |
+| 空格 / `R` / 数字键 | 暂停继续 / 重置当前场景 / 切换到第 n 个场景 |
+| 底部滑块 | 重力大小、速度迭代次数 |
+
+内置 6 个场景：五层金字塔、九层塔 + 双球、200 圆密集堆、四节链 + 距离关节单摆、马达/滑轨/角限位同场、多形状落斜面。HUD 显示 FPS、刚体数、接触数与已入睡数（睡眠中的刚体半透明绘制）。
+
+引擎侧只有 `playground/engine.mbt`：`moon.pkg` 声明 `pkgtype(kind: "foreign_library")`，再给函数加 `#export_name("pg_...")`，ABI 全用 `Int32` / `Double`，字符串和内存视图一律不过边界——所以前端不需要任何胶水代码，`WebAssembly.instantiateStreaming` 之后直接调用导出函数。
+
+改完引擎后重新生成产物（`docs/playground/engine.wasm` 已提交，Pages 才能免工具链直接服务）：
+
+```bash
+powershell -File tools/build-playground.ps1   # 或 bash tools/build-playground.sh
+node tools/check-playground.mjs               # 校验 24 个导出 + 6 场景各 180 步
+```
+
+页面自带 `?selftest=1` 开关：加载 wasm 后跑完 6 个场景各 180 步、各来一次冲击，再走一遍完整帧循环，把 FPS/刚体/接触/入睡数写进 `document.title`；无头浏览器用 `--dump-dom` 就能抓这行结果，例如 `selftest ok scenes=6 bodies=253 contacts=24 asleep=15 hud=10/16/24/15`。
 
 ## API 速览
 
@@ -211,6 +246,7 @@ moon run bench --target js        # 或 --target wasm-gc
 ```bash
 moon test                # 64 项
 moon test --target js    # 同一套断言在 JS 后端上再跑一遍
+node tools/check-playground.mjs   # playground 的 wasm：24 个导出 + 6 场景各 180 步
 ```
 
 覆盖：向量/变换数学、质量属性、AABB、圆与多边形的 7 类碰撞情形（含法向翻转）、自由落体解析解对照、落地静止、堆叠稳定性、恢复系数、睡眠、整堆入睡与落地唤醒、宽相剪枝、增量宽相与暴力枚举逐步对拍、宽相能接纳后加入的 body、冲量、射线与 AABB/点查询、17° 斜面静摩擦不起滑、动量守恒、关节长度与锚点误差、滑轨只沿轴运动与行程限位、角马达达到目标角速度、角限位夹住重力负载、软关节收敛、20 节链条不发散、builder 与手写场景逐位一致、快照 JSON 覆盖每个 body、状态摘要可复现且钉死常量、演示场景数值健全性、SVG 输出结构。

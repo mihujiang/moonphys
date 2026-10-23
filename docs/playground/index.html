@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>moonphys playground</title>
+    <style>
+      :root {
+        --bg: #0a0f1a;
+        --panel: rgba(17, 26, 41, 0.78);
+        --line: rgba(125, 211, 252, 0.16);
+        --text: #dbe7f5;
+        --dim: #7f92ab;
+        --accent: #7dd3fc;
+        --accent-strong: #38bdf8;
+      }
+      * { box-sizing: border-box; }
+      html, body {
+        margin: 0;
+        height: 100%;
+        overflow: hidden;
+        background: var(--bg);
+        color: var(--text);
+        font: 13px/1.5 "Segoe UI", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+      canvas {
+        position: fixed;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        display: block;
+        cursor: grab;
+        touch-action: none;
+      }
+      canvas.dragging { cursor: grabbing; }
+      .panel {
+        position: fixed;
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        backdrop-filter: blur(12px) saturate(1.2);
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+      }
+      .top {
+        top: 16px;
+        left: 16px;
+        padding: 12px 14px;
+        max-width: min(760px, calc(100vw - 32px));
+      }
+      .title {
+        display: flex;
+        align-items: baseline;
+        gap: 10px;
+        margin-bottom: 10px;
+      }
+      .title h1 {
+        margin: 0;
+        font-size: 15px;
+        letter-spacing: 0.02em;
+        font-weight: 600;
+      }
+      .title span { color: var(--dim); font-size: 12px; }
+      .scenes { display: flex; flex-wrap: wrap; gap: 6px; }
+      .chip {
+        border: 1px solid var(--line);
+        background: rgba(125, 211, 252, 0.06);
+        color: var(--text);
+        border-radius: 999px;
+        padding: 5px 12px;
+        font-size: 12px;
+        cursor: pointer;
+        transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+      }
+      .chip:hover { background: rgba(125, 211, 252, 0.16); }
+      .chip.active {
+        background: linear-gradient(135deg, var(--accent-strong), #6366f1);
+        border-color: transparent;
+        color: #04121f;
+        font-weight: 600;
+      }
+      .bottom {
+        bottom: 16px;
+        left: 16px;
+        right: 16px;
+        padding: 10px 14px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+      }
+      .buttons { display: flex; gap: 6px; }
+      button.action {
+        border: 1px solid var(--line);
+        background: rgba(125, 211, 252, 0.08);
+        color: var(--text);
+        border-radius: 9px;
+        padding: 6px 12px;
+        font-size: 12px;
+        cursor: pointer;
+        min-width: 62px;
+        transition: background 0.15s ease;
+      }
+      button.action:hover { background: rgba(125, 211, 252, 0.2); }
+      button.action.primary {
+        background: linear-gradient(135deg, var(--accent-strong), #6366f1);
+        border-color: transparent;
+        color: #04121f;
+        font-weight: 600;
+      }
+      .slider { display: flex; align-items: center; gap: 8px; color: var(--dim); font-size: 12px; }
+      .slider input[type="range"] {
+        width: 108px;
+        accent-color: var(--accent-strong);
+        background: transparent;
+      }
+      .slider b { color: var(--text); font-weight: 500; min-width: 34px; font-variant-numeric: tabular-nums; }
+      .hud {
+        margin-left: auto;
+        display: flex;
+        gap: 14px;
+        color: var(--dim);
+        font-variant-numeric: tabular-nums;
+        font-size: 12px;
+      }
+      .hud b { color: var(--text); font-weight: 500; }
+      .hint {
+        position: fixed;
+        top: 16px;
+        right: 16px;
+        padding: 10px 14px;
+        color: var(--dim);
+        font-size: 12px;
+        max-width: 240px;
+      }
+      .hint b { color: var(--text); font-weight: 500; }
+      .legend {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        margin-top: 4px;
+      }
+      .dot { width: 8px; height: 8px; border-radius: 3px; background: #64748b; opacity: 0.5; }
+      .error {
+        position: fixed;
+        inset: 0;
+        display: none;
+        place-items: center;
+        text-align: center;
+        padding: 24px;
+        color: #fca5a5;
+      }
+      @media (max-width: 720px) {
+        .hint { display: none; }
+        .hud { width: 100%; margin-left: 0; }
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="stage"></canvas>
+
+    <div class="panel top">
+      <div class="title">
+        <h1>moonphys playground</h1>
+        <span>纯 MoonBit 刚体引擎 · 编译到 wasm-gc 跑在浏览器里</span>
+      </div>
+      <div class="scenes" id="scenes"></div>
+    </div>
+
+    <div class="panel hint">
+      <b>拖拽</b> 抓住物体甩出去<br />
+      <b>点击</b> 在落点施加冲击波<br />
+      <b>滚轮</b> 缩放 · <b>空格</b> 暂停 · <b>R</b> 重置<br />
+      <span class="legend"><i class="dot"></i>灰色描边 = 已入睡，不再参与求解</span>
+    </div>
+
+    <div class="panel bottom">
+      <div class="buttons">
+        <button class="action primary" id="toggle">暂停</button>
+        <button class="action" id="step">单步</button>
+        <button class="action" id="reset">重置</button>
+      </div>
+      <label class="slider">重力 <input type="range" id="gravity" min="0" max="20" step="0.1" value="9.81" /><b id="gravityValue">9.8</b></label>
+      <label class="slider">迭代 <input type="range" id="iterations" min="2" max="20" step="1" value="10" /><b id="iterationsValue">10</b></label>
+      <div class="hud">
+        <span>FPS <b id="fps">–</b></span>
+        <span>刚体 <b id="bodies">–</b></span>
+        <span>接触 <b id="contacts">–</b></span>
+        <span>已睡 <b id="asleep">–</b></span>
+      </div>
+    </div>
+
+    <div class="error" id="error"></div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

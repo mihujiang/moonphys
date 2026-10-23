@@ -1,0 +1,59 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "weopqrst/moonphys/playground"
+
+// Values
+pub fn pg_asleep(Int32) -> Int32
+
+pub fn pg_blast(Double, Double, Double) -> Unit
+
+pub fn pg_contacts() -> Int32
+
+pub fn pg_count() -> Int32
+
+pub fn pg_energy() -> Double
+
+pub fn pg_grab_end() -> Unit
+
+pub fn pg_grab_move(Double, Double) -> Unit
+
+pub fn pg_grab_start(Double, Double) -> Int32
+
+pub fn pg_gravity() -> Double
+
+pub fn pg_iterations() -> Int32
+
+pub fn pg_kind(Int32) -> Int32
+
+pub fn pg_radius(Int32) -> Double
+
+pub fn pg_reset(Int32) -> Unit
+
+pub fn pg_rot(Int32) -> Double
+
+pub fn pg_scene_count() -> Int32
+
+pub fn pg_set_gravity(Double) -> Unit
+
+pub fn pg_set_iterations(Int32) -> Unit
+
+pub fn pg_step(Double) -> Unit
+
+pub fn pg_time() -> Double
+
+pub fn pg_vertex_count(Int32) -> Int32
+
+pub fn pg_vx(Int32, Int32) -> Double
+
+pub fn pg_vy(Int32, Int32) -> Double
+
+pub fn pg_x(Int32) -> Double
+
+pub fn pg_y(Int32) -> Double
+
+// Errors
+
+// Types and methods
+
+// Type aliases
+
+// Traits

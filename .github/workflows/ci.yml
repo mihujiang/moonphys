@@ -71,3 +71,14 @@ jobs:
 
       - name: Build the demo generator
         run: moon build cmd/main --target js
+
+      - name: Build the interactive playground
+        run: moon build --target wasm-gc --release
+
+      - name: Playground wasm smoke test
+        shell: bash
+        run: |
+          # The page only calls numeric `pg_*` exports, so both the fresh build
+          # and the copy committed under docs/playground must load and step.
+          node tools/check-playground.mjs _build/wasm-gc/release/build/playground/playground.wasm
+          node tools/check-playground.mjs
