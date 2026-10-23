@@ -38,7 +38,7 @@ pub impl Show for Vec2 with fn to_string(self) {
 }
 
 ///|
-pub extend Vec2 with Show::{to_string}
+pub extend Vec2 with Show::{to_string, output}
 
 ///|
 /// A 2x2 matrix stored as two column vectors.
