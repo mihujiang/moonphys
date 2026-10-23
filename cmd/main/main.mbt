@@ -137,45 +137,87 @@ fn pendulum_scene() -> @moonphys.World {
 }
 
 ///|
-/// A plank bridge between two static posts, with balls dropped on it.
-fn bridge_scene() -> @moonphys.World {
+/// Machines driven by joints: a linear actuator sweeping crates off the floor
+/// and a rotor spun by an angular motor behind a rope of soft distance joints.
+fn machine_scene() -> @moonphys.World {
   let world = @moonphys.World::new()
   add_ground(world, 14.0)
-  let left = world.add_body(
-    @moonphys.Body::fixed(@moonphys.Shape::box(0.18, 0.4))
-    .at(-7.0, 5.2)
+  // Linear actuator: a cart on a horizontal rail, driven by a prismatic motor.
+  let rail = world.add_body(
+    @moonphys.Body::fixed(@moonphys.Shape::circle(0.1))
+    .at(0.0, 12.0)
     .with_user_data(9),
   )
-  let right = world.add_body(
-    @moonphys.Body::fixed(@moonphys.Shape::box(0.18, 0.4))
-    .at(7.0, 5.2)
-    .with_user_data(9),
+  let cart = world.add_body(
+    @moonphys.Body::box(0.35, 0.25)
+    .at(-5.0, 0.35)
+    .with_friction(0.2)
+    .with_damping(0.3, 0.3)
+    .with_user_data(6),
   )
-  let mut previous = left
-  let mut last = left
-  for i in 0..<13 {
-    let x = -6.0 + i.to_double() * 1.0
-    let plank = world.add_body(
-      @moonphys.Body::box(0.45, 0.06)
-      .at(x, 5.0)
-      .with_user_data(i % 5)
-      .with_friction(0.7),
-    )
-    world.add_distance_joint(previous, plank)
-    previous = plank
-    last = plank
-  }
-  world.add_distance_joint(last, right)
-  // Balls dropped onto the middle of the bridge.
-  for i in 0..<3 {
+  let slider = world.add_prismatic_joint(
+    rail,
+    cart,
+    @moonphys.Vec2::new(-5.0, 0.35),
+    @moonphys.Vec2::new(1.0, 0.0),
+  )
+  ignore(slider.with_limits(-8.0, 8.0))
+  ignore(slider.with_motor(2.5, 40.0))
+  // Crates waiting in the path of the cart.
+  for i in 0..<5 {
     ignore(
       world.add_body(
-        @moonphys.Body::ball(0.4)
-        .at(-2.0 + i.to_double() * 2.0, 9.0)
-        .with_restitution(0.35)
-        .with_user_data(i + 1),
+        @moonphys.Body::box(0.3, 0.3)
+        .at(-0.6 + i.to_double() * 0.62, 0.32)
+        .with_friction(0.5)
+        .with_user_data(i),
       ),
     )
+  }
+  // Rotor: a hub with a long arm spun by an angular motor, plus a hanging rope
+  // made of soft distance joints so it whips instead of snapping.
+  let hub = world.add_body(
+    @moonphys.Body::fixed(@moonphys.Shape::circle(0.12))
+    .at(-6.6, 8.4)
+    .with_user_data(9),
+  )
+  let arm = world.add_body(
+    @moonphys.Body::box(1.5, 0.09).at(-5.1, 8.4).with_user_data(7),
+  )
+  world.add_revolve_joint(hub, arm, @moonphys.Vec2::new(-6.6, 8.4))
+  ignore(world.add_motor_joint(hub, arm, 3.0, 400.0))
+  // Seesaw: gravity swings the bar down onto an angle stop, which holds it.
+  let pivot = world.add_body(
+    @moonphys.Body::fixed(@moonphys.Shape::circle(0.12))
+    .at(5.4, 8.4)
+    .with_user_data(9),
+  )
+  let beam = world.add_body(
+    @moonphys.Body::box(1.2, 0.08).at(6.6, 8.4).with_user_data(5),
+  )
+  world.add_revolve_joint(pivot, beam, @moonphys.Vec2::new(5.4, 8.4))
+  ignore(
+    world.add_angle_limit_joint_at(
+      pivot,
+      beam,
+      @moonphys.Vec2::new(5.4, 8.4),
+      -0.6,
+      0.0,
+    ),
+  )
+  let mut previous = world.add_body(
+    @moonphys.Body::ball(0.22).at(-3.6, 8.4).with_user_data(2),
+  )
+  world.add_soft_distance_joint(arm, previous, 3.0, 1.0)
+  for i in 0..<4 {
+    let next = world.add_body(
+      @moonphys.Body::ball(0.18)
+      .at(-3.1 + i.to_double() * 0.5, 8.4)
+      .with_damping(0.1, 0.1)
+      .with_user_data(3),
+    )
+    world.add_soft_distance_joint(previous, next, 3.0, 1.0)
+    previous = next
   }
   world
 }
@@ -219,7 +261,8 @@ const PAGE_HEAD : String =
   #|<h1>moonphys</h1>
   #|<p class="lede">A deterministic 2D rigid body engine written in MoonBit:
   #|  SAT collision detection, impulse solver with warm starting, Coulomb friction,
-  #|  revolute and distance joints, sleeping, and a sort-and-sweep broadphase.
+  #|  revolute, distance, prismatic, angle limit and motor joints, sleeping, and a
+  #|  sort-and-sweep broadphase.
   #|  Every frame below was produced by <code>moon run cmd/main --target js</code>.</p>
 
 ///|
@@ -268,7 +311,7 @@ fn main {
   emit_scene(pyramid_scene(), options)
   println("<h2>Five link chain · double pendulum</h2>")
   emit_scene(pendulum_scene(), options)
-  println("<h2>Plank bridge · distance joints</h2>")
-  emit_scene(bridge_scene(), options)
+  println("<h2>Linear actuator · angular motor · soft rope</h2>")
+  emit_scene(machine_scene(), options)
   println(PAGE_SCRIPT)
 }

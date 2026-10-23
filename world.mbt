@@ -133,6 +133,91 @@ pub fn World::add_revolve_joint_local(
 }
 
 ///|
+/// Attach a slider between two bodies. The returned joint is the live object
+/// stored in the world, so limits and a motor can be configured in place:
+///
+/// ```moonbit nocheck
+/// let slider = world.add_prismatic_joint(rail, cart, anchor, Vec2::new(1.0, 0.0))
+/// slider.with_limits(-3.0, 3.0)
+/// slider.with_motor(1.5, 40.0)
+/// ```
+pub fn World::add_prismatic_joint(
+  self : World,
+  body_a : Int32,
+  body_b : Int32,
+  anchor : Vec2,
+  axis : Vec2,
+) -> PrismaticJoint {
+  let joint = PrismaticJoint::at(self, body_a, body_b, anchor, axis)
+  self.add_joint(Joint::Prismatic(joint))
+  joint
+}
+
+///|
+/// Keep the relative rotation of two bodies between `lower` and `upper`.
+pub fn World::add_angle_limit_joint(
+  self : World,
+  body_a : Int32,
+  body_b : Int32,
+  lower : Double,
+  upper : Double,
+) -> AngleLimitJoint {
+  let joint = AngleLimitJoint::new(body_a, body_b, lower, upper)
+  self.add_joint(Joint::AngleLimit(joint))
+  joint
+}
+
+///|
+/// Angle stop whose corrections pivot around `anchor`, which is what you want
+/// when the same anchor also carries a revolute joint.
+pub fn World::add_angle_limit_joint_at(
+  self : World,
+  body_a : Int32,
+  body_b : Int32,
+  anchor : Vec2,
+  lower : Double,
+  upper : Double,
+) -> AngleLimitJoint {
+  let joint = AngleLimitJoint::at(self, body_a, body_b, anchor, lower, upper)
+  self.add_joint(Joint::AngleLimit(joint))
+  joint
+}
+
+///|
+/// Drive the relative angular velocity of two bodies towards `target_speed`
+/// with at most `max_torque`.
+pub fn World::add_motor_joint(
+  self : World,
+  body_a : Int32,
+  body_b : Int32,
+  target_speed : Double,
+  max_torque : Double,
+) -> MotorJoint {
+  let joint = MotorJoint::new(body_a, body_b, target_speed, max_torque)
+  self.add_joint(Joint::Motor(joint))
+  joint
+}
+
+///|
+/// A distance joint whose stiffness is finite, for ropes and springs.
+pub fn World::add_soft_distance_joint(
+  self : World,
+  body_a : Int32,
+  body_b : Int32,
+  frequency : Double,
+  damping_ratio : Double,
+) -> Unit {
+  let joint = DistanceJoint::between(self, body_a, body_b)
+  ignore(joint.with_softness(frequency, damping_ratio))
+  self.add_joint(Joint::Distance(joint))
+}
+
+///|
+pub fn World::joint_count(self : World) -> Int32 {
+  self.joints.length()
+}
+
+///|
 pub fn World::body(self : World, index : Int32) -> Body {
   self.bodies[index]
 }
@@ -331,6 +416,9 @@ pub fn World::step(self : World, dt : Double) -> Unit {
       body.position = body.position + body.velocity.scale(dt)
       body.rotation = body.rotation + body.angular_velocity * dt
     }
+  }
+  for joint in self.joints {
+    joint.correct_positions(self.bodies)
   }
   if self.sleep_enabled {
     for body in self.bodies {

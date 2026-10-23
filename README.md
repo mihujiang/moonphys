@@ -36,7 +36,8 @@ println(world.body(1).position().y()) // 0.5：稳稳落在有厚度的地面上
 | 求解器 | 顺序冲量法 + 持久接触（Arbiter 按 feature id 迁移冲量做**暖启动**）+ Baumgarte 位置偏置 |
 | 摩擦 | 库仑锥，切向冲量钳制在 ±μ·Pn |
 | 恢复系数 | 只在法向相对速度超过阈值时生效，避免静止抖动 |
-| 关节 | `DistanceJoint`（定长）、`RevolveJoint`（铰链），用 2×2 有效质量矩阵求解 |
+| 关节 | `DistanceJoint`（定长/软弹簧）、`RevolveJoint`（铰链）、`PrismaticJoint`（滑轨+行程限位+电动）、`AngleLimitJoint`（角限位）、`MotorJoint`（角马达），统一用有效质量矩阵求解 |
+| 限位 | 硬限位按纯速度约束求解（不反弹），残余穿出由积分后的位置投影消除 |
 | 睡眠 | 线/角速度低于阈值持续 0.5s 后休眠，接触对的动态体互相唤醒 |
 | 确定性 | 无随机、无哈希迭代、固定步长 + 稳定排序 → 两次运行逐位一致（有测试） |
 | 渲染 | `render` 包把世界快照输出为 SVG，带网格与配色，可逐帧拼成动画 |
@@ -67,7 +68,7 @@ moon run cmd/main --target js > docs/index.html
 
 1. **Pyramid stack** — 6 层 21 个方块的金字塔，左上方斜面滚球（摩擦），三颗弹球砸下来。
 2. **Five link chain · double pendulum** — 5 节链条与双摆，铰链约束在重力下的混沌运动。
-3. **Plank bridge** — 13 块木板用距离关节连成的桥，两个静态桥墩，中间砸下三颗球。
+3. **Linear actuator · angular motor · soft rope** — 电动滑轨推箱、角马达带动的旋转臂与软弹簧绳、重力压在角限位上的跷跷板。
 
 在线预览：GitHub Pages 打开 `docs/index.html` 即可（仓库 Settings → Pages → Source 选 `main` + `/docs`）。
 
@@ -117,6 +118,10 @@ body.local_to_world(p); body.world_to_local(p)
 world.add_distance_joint(index_a, index_b)                     // 保持当前中心距
 world.add_revolve_joint(index_a, index_b, @moonphys.Vec2::new(0.0, 5.0)) // 世界锚点
 world.add_revolve_joint_local(a, b, local_a, local_b)          // 各自的局部锚点
+world.add_prismatic_joint(a, b, anchor, axis)                  // 滑轨，可 .with_limits/.with_motor
+world.add_angle_limit_joint_at(a, b, anchor, -0.6, 0.6)        // 绕锚点的角限位
+world.add_motor_joint(a, b, 2.0, 200.0)                        // 目标角速度, 最大力矩
+world.add_soft_distance_joint(a, b, 4.0, 1.0)                  // 频率 Hz, 阻尼比
 ```
 
 ## 实现要点
@@ -142,7 +147,7 @@ world.add_revolve_joint_local(a, b, local_a, local_b)          // 各自的局�
 moon test
 ```
 
-覆盖：向量/变换数学、质量属性、AABB、圆与多边形的 7 类碰撞情形（含法向翻转）、自由落体解析解对照、落地静止、堆叠稳定性、恢复系数、睡眠、宽相剪枝、冲量、关节长度与锚点误差、演示场景数值健全性、SVG 输出结构。
+覆盖：向量/变换数学、质量属性、AABB、圆与多边形的 7 类碰撞情形（含法向翻转）、自由落体解析解对照、落地静止、堆叠稳定性、恢复系数、睡眠、宽相剪枝、冲量、射线与 AABB/点查询、17° 斜面静摩擦不起滑、动量守恒、关节长度与锚点误差、滑轨只沿轴运动与行程限位、角马达达到目标角速度、角限位夹住重力负载、软关节收敛、20 节链条不发散、演示场景数值健全性、SVG 输出结构。
 
 ## 移植来源与许可
 
@@ -156,8 +161,8 @@ moon test
 
 ## 边界与后续
 
-当前明确不做（欢迎 PR）：连续碰撞检测（CCD）、凹多边形分解、关节角度限位与马达、传感器、软约束/布料、多线程求解。已规划的方向：CCD、更多关节类型、与 MoonBit GUI/游戏框架对接的适配层、性能基准（对照 Box2D-Lite 的基准场景）。
+当前明确不做（欢迎 PR）：连续碰撞检测（CCD）、凹多边形分解、布料/流体、传感器、多线程求解。已规划的方向：CCD、更多关节类型（齿轮/焊死/轮式）、与 MoonBit GUI/游戏框架对接的适配层、性能基准（对照 Box2D-Lite 的基准场景）。
 
 ## 开发方式
 
-本项目在 AI 编程助手（CodeBuddy / DeepSeek）的协助下完成：数学基底、SAT 裁剪、顺序冲量与关节求解的算法出处均列在上面的"移植来源"一节，代码是逐模块重写而不是复制；每一处物理行为都有对应的测试（38 项）与可复现的数值断言，因此任何一段实现都能被读、被改、被证伪。若你对某段策略有疑问（例如为什么偏置系数是 0.2、为什么恢复系数有速度阈值），可以直接在 issue 里问，代码里的注释和测试会一起回答。
+本项目在 AI 编程助手（CodeBuddy / DeepSeek）的协助下完成：数学基底、SAT 裁剪、顺序冲量与关节求解的算法出处均列在上面的"移植来源"一节，代码是逐模块重写而不是复制；每一处物理行为都有对应的测试（57 项）与可复现的数值断言，因此任何一段实现都能被读、被改、被证伪。若你对某段策略有疑问（例如为什么偏置系数是 0.2、为什么恢复系数有速度阈值），可以直接在 issue 里问，代码里的注释和测试会一起回答。

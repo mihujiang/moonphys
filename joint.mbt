@@ -17,6 +17,9 @@ pub struct DistanceJoint {
   mut impulse : Double
   mut mass : Double
   mut bias : Double
+  mut gamma : Double
+  mut frequency : Double
+  mut damping_ratio : Double
 }
 
 ///|
@@ -36,6 +39,9 @@ pub fn DistanceJoint::new(
     impulse: 0.0,
     mass: 0.0,
     bias: 0.0,
+    gamma: 0.0,
+    frequency: 0.0,
+    damping_ratio: 1.0,
   }
 }
 
@@ -60,6 +66,22 @@ pub fn DistanceJoint::between(
 ///|
 pub fn DistanceJoint::length(self : DistanceJoint) -> Double {
   self.length
+}
+
+///|
+/// Turn the rigid rod into a spring.
+///
+/// `frequency` is in Hz and `damping_ratio` of 1 is critically damped. With
+/// softness the joint trades exactness for stability to avoid the jitter a hard
+/// constraint shows on long chains.
+pub fn DistanceJoint::with_softness(
+  self : DistanceJoint,
+  frequency : Double,
+  damping_ratio : Double,
+) -> DistanceJoint {
+  self.frequency = frequency.max(0.0)
+  self.damping_ratio = damping_ratio.max(0.0)
+  self
 }
 
 ///|
@@ -95,13 +117,24 @@ pub fn DistanceJoint::pre_step(
     body_b.inv_mass +
     body_a.inv_inertia * cr_a * cr_a +
     body_b.inv_inertia * cr_b * cr_b
-  self.mass = if k > K_EPSILON { 1.0 / k } else { 0.0 }
-  let error = clamp(
-    current - self.length,
-    -JOINT_MAX_CORRECTION,
-    JOINT_MAX_CORRECTION,
-  )
-  self.bias = JOINT_BIAS_FACTOR * inv_dt * error
+  let error = joint_error(current - self.length)
+  if self.frequency > 0.0 && k > K_EPSILON {
+    // Soft constraint: gamma and bias come from the spring-damper model, so
+    // the solver sees a spring instead of a rigid rod.
+    let dt = 1.0 / inv_dt
+    let raw_mass = 1.0 / k
+    let omega = 2.0 * K_PI * self.frequency
+    let damping = 2.0 * raw_mass * self.damping_ratio * omega
+    let stiffness = raw_mass * omega * omega
+    let gamma = dt * (damping + dt * stiffness)
+    self.gamma = if gamma > K_EPSILON { 1.0 / gamma } else { 0.0 }
+    self.bias = error * dt * stiffness * self.gamma
+    self.mass = 1.0 / (k + self.gamma)
+  } else {
+    self.gamma = 0.0
+    self.mass = if k > K_EPSILON { 1.0 / k } else { 0.0 }
+    self.bias = JOINT_BIAS_FACTOR * inv_dt * error
+  }
   let impulse = axis.scale(self.impulse)
   body_a.velocity = body_a.velocity - impulse.scale(body_a.inv_mass)
   body_a.angular_velocity = body_a.angular_velocity -
@@ -125,7 +158,7 @@ pub fn DistanceJoint::solve_velocity(
   let axis = (point_b - point_a).normalize_or(Vec2::new(1.0, 0.0))
   let dv = body_b.point_velocity(point_b) - body_a.point_velocity(point_a)
   let vn = dv.dot(axis)
-  let d_impulse = -self.mass * (vn + self.bias)
+  let d_impulse = -self.mass * (vn + self.bias + self.gamma * self.impulse)
   self.impulse = self.impulse + d_impulse
   let impulse = axis.scale(d_impulse)
   body_a.velocity = body_a.velocity - impulse.scale(body_a.inv_mass)
@@ -264,6 +297,9 @@ pub fn RevolveJoint::solve_velocity(
 pub enum Joint {
   Distance(DistanceJoint)
   Revolve(RevolveJoint)
+  Prismatic(PrismaticJoint)
+  AngleLimit(AngleLimitJoint)
+  Motor(MotorJoint)
 }
 
 ///|
@@ -275,6 +311,9 @@ pub fn Joint::pre_step(
   match self {
     Distance(joint) => joint.pre_step(bodies, inv_dt)
     Revolve(joint) => joint.pre_step(bodies, inv_dt)
+    Prismatic(joint) => joint.pre_step(bodies, inv_dt)
+    AngleLimit(joint) => joint.pre_step(bodies)
+    Motor(joint) => joint.pre_step(bodies, inv_dt)
   }
 }
 
@@ -283,5 +322,19 @@ pub fn Joint::solve_velocity(self : Joint, bodies : Array[Body]) -> Unit {
   match self {
     Distance(joint) => joint.solve_velocity(bodies)
     Revolve(joint) => joint.solve_velocity(bodies)
+    Prismatic(joint) => joint.solve_velocity(bodies)
+    AngleLimit(joint) => joint.solve_velocity(bodies)
+    Motor(joint) => joint.solve_velocity(bodies)
+  }
+}
+
+///|
+/// Post-integration positional pass. Hard stops are solved as pure velocity
+/// constraints, so whatever overshoot is left is projected out here.
+pub fn Joint::correct_positions(self : Joint, bodies : Array[Body]) -> Unit {
+  match self {
+    Prismatic(joint) => joint.correct_positions(bodies)
+    AngleLimit(joint) => joint.correct_positions(bodies)
+    Distance(_) | Revolve(_) | Motor(_) => ()
   }
 }

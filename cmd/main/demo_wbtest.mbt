@@ -41,28 +41,44 @@ test "chain and pendulum stay attached" {
 }
 
 ///|
-test "bridge sags but holds" {
-  let world = bridge_scene()
+test "linear actuator sweeps the crates away" {
+  let world = machine_scene()
+  check_scene(world, 240)
+  // The cart is driven to the right at 3.2 units/s, so the crates it shoves
+  // must end up well past their starting column.
+  let mut furthest = -100.0
+  for snapshot in world.snapshot() {
+    let p = snapshot.position()
+    if !snapshot.shape().is_circle() && p.y() < 1.0 {
+      furthest = furthest.max(p.x())
+    }
+  }
+  assert_true(furthest > 3.0)
+}
+
+///|
+test "seesaw rests on its angle stop" {
+  let world = machine_scene()
   for _frame in 0..<240 {
     world.step(DT)
   }
-  let mut planks = 0
+  let mut beam_y = -1.0
   for snapshot in world.snapshot() {
     let p = snapshot.position()
     if snapshot.shape().is_circle() {
       continue
     }
-    if p.y() < 6.0 && p.y() > 1.0 {
-      planks = planks + 1
+    if p.x() > 5.0 && p.x() < 8.5 && p.y() > 2.0 {
+      beam_y = p.y()
     }
   }
-  // Posts plus planks: nothing fell through the ground.
-  assert_true(planks >= 15)
+  // Pivoted at y = 8.4 with a -0.6 rad stop, the beam hangs high above the floor.
+  assert_true(beam_y > 7.0)
 }
 
 ///|
 test "renderer emits one element per body" {
-  let world = bridge_scene()
+  let world = machine_scene()
   let svg = @render.frame_svg(world, @render.SvgOptions::new())
   assert_true(svg.length() > 1000)
   for snapshot in world.snapshot() {
