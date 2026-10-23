@@ -21,10 +21,10 @@ test "vec2 normalize is unit length" {
 
 ///|
 test "vec2 rotate ninety degrees" {
-  let v = @moonphys.Vec2::new(1.0, 0.0).rotate(K_PI / 2.0)
+  let v = @moonphys.Vec2::new(1.0, 0.0).rotate(@moonphys.K_PI / 2.0)
   assert_true(approx(v.x(), 0.0, 1.0e-12))
   assert_true(approx(v.y(), 1.0, 1.0e-12))
-  let back = v.rotate_inv(K_PI / 2.0)
+  let back = v.rotate_inv(@moonphys.K_PI / 2.0)
   assert_true(approx(back.x(), 1.0, 1.0e-12))
 }
 
@@ -32,7 +32,7 @@ test "vec2 rotate ninety degrees" {
 test "cross scalar matches cross product" {
   let w = 2.0
   let r = @moonphys.Vec2::new(3.0, -1.0)
-  let v = cross_scalar(w, r)
+  let v = @moonphys.cross_scalar(w, r)
   assert_true(approx(v.x(), 2.0, 1.0e-12))
   assert_true(approx(v.y(), 6.0, 1.0e-12))
 }
@@ -48,8 +48,8 @@ test "box mass properties" {
 ///|
 test "circle mass properties" {
   let data = @moonphys.Shape::circle(2.0).mass_data(1.0)
-  assert_true(approx(data.mass(), K_PI * 4.0, 1.0e-9))
-  assert_true(approx(data.inertia(), 0.5 * K_PI * 4.0 * 4.0, 1.0e-9))
+  assert_true(approx(data.mass(), @moonphys.K_PI * 4.0, 1.0e-9))
+  assert_true(approx(data.inertia(), 0.5 * @moonphys.K_PI * 4.0 * 4.0, 1.0e-9))
 }
 
 ///|

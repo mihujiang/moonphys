@@ -71,7 +71,7 @@ test "circle resting on box" {
 test "rotated box collides" {
   let rotated = @moonphys.Transform::new(
     @moonphys.Vec2::new(0.0, 1.3),
-    K_PI / 4.0,
+    @moonphys.K_PI / 4.0,
   )
   let points = @moonphys.collide(
     @moonphys.Shape::box(1.0, 1.0),
