@@ -3,10 +3,15 @@
 版本遵循 semver：对外契约是 `pub` 接口（`.mbti`），内部实现随时可改。
 每条变更后面的短哈希指向本仓库的对应提交。
 
-## [1.0.0] - 2026-10-23
+## [0.2.0] - 2026-10-23
 
 首个稳定版本。64 项测试在 `moon test` 与 `moon test --target js` 上都全绿，
 另有 `node tools/check-playground.mjs` 守着浏览器侧的 wasm 构建。
+
+> 版本号说明：mooncakes 目前只接受 `0.x.y`（发布 1.0.0 时服务端返回
+> `403 Forbidden: In this very early stage, the major version must be '0'`），
+> 所以首个稳定版以 `0.2.0` 发布。对外 API 已按稳定口径冻结，等平台放开限制
+> 再改成 `1.0.0`，不改变语义。
 
 ### Added
 

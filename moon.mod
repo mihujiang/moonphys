@@ -1,6 +1,6 @@
 name = "weopqrst/moonphys"
 
-version = "1.0.0"
+version = "0.2.0"
 
 readme = "README.md"
 

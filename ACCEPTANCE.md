@@ -1,4 +1,4 @@
-# 验收材料（v1.0.0）
+# 验收材料（v0.2.0）
 
 提交表单要的三样东西，以及每条硬指标对应的**可复现证据**。所有数字都来自本机实跑，
 命令写在旁边，换台机器重跑即可复核（机器不同，ms/step 会变，量级不变）。
@@ -29,7 +29,7 @@
 
 | 项 | 值 | 怎么得到 |
 | --- | --- | --- |
-| 版本 | 1.0.0 | `moon.mod` |
+| 版本 | 0.2.0（mooncakes 目前只接受 `0.x.y`，详见 CHANGELOG） | `moon.mod` |
 | 测试 | 64 项，双 target 全绿 | `moon test` / `moon test --target js` |
 | wasm 导出 | 24 个 `pg_*`，6 个场景 | `node tools/check-playground.mjs` |
 | 性能 stack（101 体） | 0.40 / 0.49 ms/step（js / wasm-gc） | `moon run bench --target js`、`--target wasm-gc` |
@@ -67,6 +67,6 @@ msedge --headless=new --virtual-time-budget=6000 --dump-dom \
   这是有意为之，换来零胶水。
 - **`file:` 协议打不开 playground**：浏览器不允许 `fetch` 本地 `.wasm`，页面会给出明确提示。
 - **6 层以上金字塔有残余抖动**（0.1–0.5 m/s，不入睡）：需要块求解器或位置求解器，
-  已记在 `PLAN` 的后续项里，不在 1.0.0 承诺范围内。
+  已记在 `PLAN` 的后续项里，不在 0.2.0 承诺范围内。
 - **Pages 首次启用需要 owner 点一次开关**：工作流自建站点会被 GitHub 拒绝
   （`Resource not accessible by integration`），这是权限边界，不是代码缺陷。
