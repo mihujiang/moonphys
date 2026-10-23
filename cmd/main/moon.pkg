@@ -1,6 +1,6 @@
 import {
-  "mihujiang/moonphys",
-  "mihujiang/moonphys/render",
+  "weopqrst/moonphys",
+  "weopqrst/moonphys/render",
 }
 
 pkgtype(kind: "executable")

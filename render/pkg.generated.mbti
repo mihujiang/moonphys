@@ -1,8 +1,8 @@
 // Generated using `moon info`, DON'T EDIT IT
-package "mihujiang/moonphys/render"
+package "weopqrst/moonphys/render"
 
 import {
-  "mihujiang/moonphys",
+  "weopqrst/moonphys",
 }
 
 // Values

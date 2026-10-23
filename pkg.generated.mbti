@@ -1,5 +1,5 @@
 // Generated using `moon info`, DON'T EDIT IT
-package "mihujiang/moonphys"
+package "weopqrst/moonphys"
 
 // Values
 pub const K_EPSILON : Double = 1.0e-9

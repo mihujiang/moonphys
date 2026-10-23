@@ -44,14 +44,14 @@ println(world.body(1).position().y()) // 0.5：稳稳落在有厚度的地面上
 ## 安装
 
 ```bash
-moon add mihujiang/moonphys
+moon add weopqrst/moonphys
 ```
 
 在需要使用的包的 `moon.pkg` 中：
 
 ```
 import {
-  "mihujiang/moonphys" @moonphys,
+  "weopqrst/moonphys" @moonphys,
 }
 ```
 
