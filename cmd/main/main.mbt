@@ -296,7 +296,7 @@ const PAGE_SCRIPT : String =
   #|}
   #|requestAnimationFrame(tick);
   #|</script>
-  #|<footer>moonphys · MIT / Apache-2.0 · ported concepts from Box2D-Lite and Planck.js</footer>
+  #|<footer>moonphys · Apache-2.0 · concepts ported from Box2D-Lite, Box2D and Planck.js</footer>
   #|</body>
   #|</html>
 
