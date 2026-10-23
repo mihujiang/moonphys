@@ -1,0 +1,144 @@
+///|
+const FRAME : Double = 1.0 / 60.0
+
+///|
+fn ground(world : World) -> Int {
+  world.add_body(Body::fixed(Shape::box(20.0, 0.5)).at(0.0, -0.5))
+}
+
+///|
+fn stack_scene() -> World {
+  let world = World::new()
+  ignore(ground(world))
+  for i in 0..<6 {
+    ignore(
+      world.add_body(
+        Body::box(0.5, 0.5)
+        .at(0.0, 0.5 + i.to_double())
+        .with_friction(0.6)
+        .with_restitution(0.0),
+      ),
+    )
+  }
+  world
+}
+
+///|
+test "free fall matches analytic solution" {
+  let world = World::with_gravity(0.0, -10.0)
+  let ball = world.add_body(Body::ball(0.1).at(0.0, 0.0))
+  world.run(60, FRAME)
+  let expected_velocity = -10.0
+  let position = world.body(ball)
+  assert_true(approx(position.velocity().y(), expected_velocity, 0.1))
+  assert_true(approx(position.position().y(), -5.0, 0.2))
+}
+
+///|
+test "ball comes to rest on the ground" {
+  let world = World::new()
+  ignore(ground(world))
+  let ball = world.add_body(Body::ball(0.5).at(0.0, 3.0).with_restitution(0.0))
+  world.run(300, FRAME)
+  let body = world.body(ball)
+  assert_true(approx(body.position().y(), 0.5, 0.05))
+  assert_true(body.velocity().length() < 0.1)
+}
+
+///|
+test "box comes to rest on the ground without sinking" {
+  let world = World::new()
+  ignore(ground(world))
+  let bin = world.add_body(
+    Body::box(0.5, 0.5).at(0.0, 4.0).with_restitution(0.0).with_friction(0.5),
+  )
+  world.run(300, FRAME)
+  let body = world.body(bin)
+  assert_true(approx(body.position().y(), 0.5, 0.05))
+  assert_true(body.rotation().abs() < 0.05)
+}
+
+///|
+test "stack of six boxes stays put" {
+  let world = World::new()
+  ignore(ground(world))
+  let ids : Array[Int] = []
+  for i in 0..<6 {
+    ids.push(
+      world.add_body(
+        Body::box(0.5, 0.5)
+        .at(0.0, 0.5 + i.to_double())
+        .with_friction(0.6)
+        .with_restitution(0.0),
+      ),
+    )
+  }
+  world.run(300, FRAME)
+  for i in 0..<6 {
+    let body = world.body(ids[i])
+    let expected = 0.5 + i.to_double()
+    assert_true(approx(body.position().x(), 0.0, 0.05))
+    assert_true(approx(body.position().y(), expected, 0.15))
+    assert_true(body.rotation().abs() < 0.15)
+  }
+}
+
+///|
+test "restitution removes speed" {
+  let world = World::with_gravity(0.0, 0.0)
+  ignore(world.add_body(Body::fixed(Shape::box(10.0, 0.5)).at(0.0, -0.5)))
+  let ball = world.add_body(
+    Body::ball(0.5)
+    .at(0.0, 1.0)
+    .with_velocity(0.0, -5.0)
+    .with_restitution(0.5)
+    .with_friction(0.0),
+  )
+  world.run(20, FRAME)
+  let speed = world.body(ball).velocity().length()
+  assert_true(speed < 5.0)
+  assert_true(speed > 0.5)
+}
+
+///|
+test "identical scenes replay bit for bit" {
+  let a = stack_scene()
+  let b = stack_scene()
+  a.run(300, FRAME)
+  b.run(300, FRAME)
+  let sa = a.snapshot()
+  let sb = b.snapshot()
+  assert_eq(sa.length(), sb.length())
+  for i in 0..<sa.length() {
+    assert_true(sa[i].position() == sb[i].position())
+    assert_true(sa[i].rotation() == sb[i].rotation())
+  }
+}
+
+///|
+test "sleeping bodies are reused until something moves" {
+  let world = World::new()
+  ignore(ground(world))
+  let ball = world.add_body(Body::ball(0.5).at(0.0, 2.0).with_restitution(0.0))
+  world.run(300, FRAME)
+  assert_true(world.body(ball).awake() == false)
+  assert_true(world.contact_count() > 0)
+}
+
+///|
+test "broadphase skips distant bodies" {
+  let world = World::with_gravity(0.0, 0.0)
+  ignore(world.add_body(Body::ball(0.5).at(-100.0, 0.0)))
+  ignore(world.add_body(Body::ball(0.5).at(100.0, 0.0)))
+  world.run(10, FRAME)
+  assert_eq(world.arbiter_count(), 0)
+}
+
+///|
+test "impulse changes velocity" {
+  let world = World::with_gravity(0.0, 0.0)
+  let ball = world.add_body(Body::ball(0.5).at(0.0, 0.0))
+  world.body(ball).apply_impulse(Vec2::new(2.0, 0.0), Vec2::zero())
+  let mass = world.body(ball).mass()
+  assert_true(approx(world.body(ball).velocity().x(), 2.0 / mass, 1.0e-9))
+}
