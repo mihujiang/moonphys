@@ -14,8 +14,8 @@ pub fn svg_document(@moonphys.World, SvgOptions) -> String
 
 // Types and methods
 pub struct SvgOptions {
-  mut width : Int
-  mut height : Int
+  mut width : Int32
+  mut height : Int32
   mut scale : Double
   mut center_x : Double
   mut center_y : Double
@@ -27,9 +27,8 @@ pub fn SvgOptions::with_background(Self, String) -> Self
 pub fn SvgOptions::with_center(Self, Double, Double) -> Self
 pub fn SvgOptions::with_grid(Self, Bool) -> Self
 pub fn SvgOptions::with_scale(Self, Double) -> Self
-pub fn SvgOptions::with_size(Self, Int, Int) -> Self
+pub fn SvgOptions::with_size(Self, Int32, Int32) -> Self
 
 // Type aliases
 
 // Traits
-

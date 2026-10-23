@@ -1,8 +1,8 @@
 ///|
 /// Canvas and camera settings for SVG output.
 pub struct SvgOptions {
-  mut width : Int
-  mut height : Int
+  mut width : Int32
+  mut height : Int32
   mut scale : Double
   mut center_x : Double
   mut center_y : Double
@@ -26,8 +26,8 @@ pub fn SvgOptions::new() -> SvgOptions {
 ///|
 pub fn SvgOptions::with_size(
   self : SvgOptions,
-  width : Int,
-  height : Int,
+  width : Int32,
+  height : Int32,
 ) -> SvgOptions {
   self.width = width
   self.height = height
@@ -68,7 +68,7 @@ pub fn SvgOptions::with_background(
 
 ///|
 /// Palette used for bodies, keyed by `user_data`.
-fn palette(index : Int) -> String {
+fn palette(index : Int32) -> String {
   let colors : Array[String] = [
     "#7dd3fc", "#fbbf24", "#f472b6", "#a78bfa", "#34d399", "#fb7185", "#60a5fa",
     "#f59e0b", "#c084fc", "#4ade80",

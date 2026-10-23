@@ -9,8 +9,8 @@ const JOINT_MAX_CORRECTION : Double = 0.2
 ///|
 /// A rigid rod that keeps two anchor points at a fixed distance.
 pub struct DistanceJoint {
-  body_a : Int
-  body_b : Int
+  body_a : Int32
+  body_b : Int32
   local_anchor_a : Vec2
   local_anchor_b : Vec2
   length : Double
@@ -21,8 +21,8 @@ pub struct DistanceJoint {
 
 ///|
 pub fn DistanceJoint::new(
-  body_a : Int,
-  body_b : Int,
+  body_a : Int32,
+  body_b : Int32,
   local_anchor_a : Vec2,
   local_anchor_b : Vec2,
   length : Double,
@@ -43,8 +43,8 @@ pub fn DistanceJoint::new(
 /// Join the centers of two bodies at their current distance.
 pub fn DistanceJoint::between(
   world : World,
-  body_a : Int,
-  body_b : Int,
+  body_a : Int32,
+  body_b : Int32,
 ) -> DistanceJoint {
   let a = world.body(body_a)
   let b = world.body(body_b)
@@ -139,8 +139,8 @@ pub fn DistanceJoint::solve_velocity(
 ///|
 /// A hinge: two anchor points are kept coincident, both bodies may rotate.
 pub struct RevolveJoint {
-  body_a : Int
-  body_b : Int
+  body_a : Int32
+  body_b : Int32
   local_anchor_a : Vec2
   local_anchor_b : Vec2
   mut impulse : Vec2
@@ -152,8 +152,8 @@ pub struct RevolveJoint {
 
 ///|
 pub fn RevolveJoint::new(
-  body_a : Int,
-  body_b : Int,
+  body_a : Int32,
+  body_b : Int32,
   local_anchor_a : Vec2,
   local_anchor_b : Vec2,
 ) -> RevolveJoint {
@@ -174,8 +174,8 @@ pub fn RevolveJoint::new(
 /// Revolve joint whose anchors are both at the given world point.
 pub fn RevolveJoint::at(
   world : World,
-  body_a : Int,
-  body_b : Int,
+  body_a : Int32,
+  body_b : Int32,
   anchor : Vec2,
 ) -> RevolveJoint {
   RevolveJoint::new(

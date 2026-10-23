@@ -94,8 +94,8 @@ test "separating axis reports the deepest penetration" {
 ///|
 test "clip_segment_to_line keeps the inside part and the crossing point" {
   let segment : Array[ClipVertex] = [
-    { v: Vec2::new(-1.0, 1.0), id: 7 },
-    { v: Vec2::new(1.0, -1.0), id: 9 },
+    { v: Vec2::new(-1.0, 1.0), id: 7, },
+    { v: Vec2::new(1.0, -1.0), id: 9, },
   ]
   let clipped = clip_segment_to_line(segment, Vec2::new(0.0, 1.0), 0.0, 3)
   assert_eq(clipped.length(), 2)
@@ -109,8 +109,8 @@ test "clip_segment_to_line keeps the inside part and the crossing point" {
 ///|
 test "a segment fully inside the line is not clipped" {
   let segment : Array[ClipVertex] = [
-    { v: Vec2::new(-1.0, -1.0), id: 1 },
-    { v: Vec2::new(1.0, -2.0), id: 2 },
+    { v: Vec2::new(-1.0, -1.0), id: 1, },
+    { v: Vec2::new(1.0, -2.0), id: 2, },
   ]
   let clipped = clip_segment_to_line(segment, Vec2::new(0.0, 1.0), 0.0, 0)
   assert_eq(clipped.length(), 2)

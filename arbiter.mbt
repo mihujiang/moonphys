@@ -17,8 +17,8 @@ const MAX_CORRECTION : Double = 0.2
 /// Impulses are accumulated and clamped, and are carried over to the next
 /// frame by matching contact feature ids, which is what makes stacks stable.
 pub struct Arbiter {
-  body_a : Int
-  body_b : Int
+  body_a : Int32
+  body_b : Int32
   mut contacts : Array[ContactPoint]
   mut normal_impulses : Array[Double]
   mut tangent_impulses : Array[Double]
@@ -32,8 +32,8 @@ pub struct Arbiter {
 
 ///|
 pub fn Arbiter::new(
-  body_a : Int,
-  body_b : Int,
+  body_a : Int32,
+  body_b : Int32,
   contacts : Array[ContactPoint],
   friction : Double,
   restitution : Double,
@@ -55,12 +55,12 @@ pub fn Arbiter::new(
 }
 
 ///|
-pub fn Arbiter::body_a(self : Arbiter) -> Int {
+pub fn Arbiter::body_a(self : Arbiter) -> Int32 {
   self.body_a
 }
 
 ///|
-pub fn Arbiter::body_b(self : Arbiter) -> Int {
+pub fn Arbiter::body_b(self : Arbiter) -> Int32 {
   self.body_b
 }
 

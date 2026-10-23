@@ -2,7 +2,7 @@
 const FRAME : Double = 1.0 / 60.0
 
 ///|
-fn ground(world : @moonphys.World) -> Int {
+fn ground(world : @moonphys.World) -> Int32 {
   world.add_body(
     @moonphys.Body::fixed(@moonphys.Shape::box(20.0, 0.5)).at(0.0, -0.5),
   )
@@ -69,7 +69,7 @@ test "box comes to rest on the ground without sinking" {
 test "stack of six boxes stays put" {
   let world = @moonphys.World::new()
   ignore(ground(world))
-  let ids : Array[Int] = []
+  let ids : Array[Int32] = []
   for i in 0..<6 {
     ids.push(
       world.add_body(

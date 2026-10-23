@@ -7,7 +7,7 @@ pub struct Aabb {
 
 ///|
 pub fn Aabb::new(min : Vec2, max : Vec2) -> Aabb {
-  { min, max }
+  { min, max, }
 }
 
 ///|
@@ -31,13 +31,13 @@ pub fn Aabb::contains_point(self : Aabb, p : Vec2) -> Bool {
 
 ///|
 pub fn Aabb::union(self : Aabb, other : Aabb) -> Aabb {
-  { min: self.min.min(other.min), max: self.max.max(other.max) }
+  { min: self.min.min(other.min), max: self.max.max(other.max), }
 }
 
 ///|
 /// Grow the box by `margin` on every side.
 pub fn Aabb::expanded(self : Aabb, margin : Double) -> Aabb {
-  { min: self.min - Vec2::splat(margin), max: self.max + Vec2::splat(margin) }
+  { min: self.min - Vec2::splat(margin), max: self.max + Vec2::splat(margin), }
 }
 
 ///|
@@ -200,7 +200,7 @@ pub fn Shape::area(self : Shape) -> Double {
 
 ///|
 /// Outward unit normal of polygon edge `i`.
-pub fn Shape::edge_normal(self : Shape, i : Int) -> Vec2 {
+pub fn Shape::edge_normal(self : Shape, i : Int32) -> Vec2 {
   match self {
     Circle(_) => Vec2::zero()
     Polygon(vs) => {
@@ -243,7 +243,7 @@ pub fn Shape::mass_data(self : Shape, density : Double) -> MassData {
   match self {
     Circle(r) => {
       let mass = density * K_PI * r * r
-      { mass, inertia: 0.5 * mass * r * r, center: Vec2::zero() }
+      { mass, inertia: 0.5 * mass * r * r, center: Vec2::zero(), }
     }
     Polygon(vs) => polygon_mass_data(vs, density)
   }
@@ -266,13 +266,13 @@ fn polygon_mass_data(vs : Array[Vec2], density : Double) -> MassData {
   }
   let area = area_acc * 0.5
   if area.abs() < K_EPSILON {
-    return { mass: 0.0, inertia: 0.0, center: Vec2::zero() }
+    return { mass: 0.0, inertia: 0.0, center: Vec2::zero(), }
   }
   let center = centroid_acc.scale(1.0 / (6.0 * area))
   let mass = density * area.abs()
   let inertia_origin = density * inertia_acc / 12.0
   let inertia = inertia_origin - mass * center.length_sq()
-  { mass, inertia: inertia.max(1.0e-12), center }
+  { mass, inertia: inertia.max(1.0e-12), center, }
 }
 
 ///|

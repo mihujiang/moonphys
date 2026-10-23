@@ -11,7 +11,7 @@
 const DT : Double = 1.0 / 60.0
 
 ///|
-const FRAMES : Int = 240
+const FRAMES : Int32 = 240
 
 ///|
 fn add_ground(world : @moonphys.World, half_width : Double) -> Unit {

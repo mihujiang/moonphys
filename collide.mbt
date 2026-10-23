@@ -11,7 +11,7 @@ pub struct ContactPoint {
   position : Vec2
   normal : Vec2
   separation : Double
-  feature_id : Int
+  feature_id : Int32
 }
 
 ///|
@@ -30,7 +30,7 @@ pub fn ContactPoint::separation(self : ContactPoint) -> Double {
 }
 
 ///|
-pub fn ContactPoint::feature_id(self : ContactPoint) -> Int {
+pub fn ContactPoint::feature_id(self : ContactPoint) -> Int32 {
   self.feature_id
 }
 
@@ -39,7 +39,7 @@ pub fn ContactPoint::feature_id(self : ContactPoint) -> Int {
 /// impulses can be carried over between frames (warm starting).
 priv struct ClipVertex {
   v : Vec2
-  id : Int
+  id : Int32
 }
 
 ///|
@@ -52,7 +52,7 @@ fn world_vertices(vertices : Array[Vec2], xf : Transform) -> Array[Vec2] {
 }
 
 ///|
-fn polygon_edge_normal(vertices : Array[Vec2], i : Int) -> Vec2 {
+fn polygon_edge_normal(vertices : Array[Vec2], i : Int32) -> Vec2 {
   let n = vertices.length()
   let edge = vertices[(i + 1) % n] - vertices[i]
   Vec2::new(edge.y, -edge.x).normalize()
@@ -202,7 +202,7 @@ fn find_max_separation(
   xf_a : Transform,
   vb : Array[Vec2],
   xf_b : Transform,
-) -> (Int, Double) {
+) -> (Int32, Double) {
   let world_b = world_vertices(vb, xf_b)
   let mut best_index = 0
   let mut max_separation = -1.0e30
@@ -231,7 +231,7 @@ fn find_incident_edge(
   vb : Array[Vec2],
   xf_b : Transform,
   reference_normal : Vec2,
-  reference_edge : Int,
+  reference_edge : Int32,
 ) -> Array[ClipVertex] {
   let n = vb.length()
   let mut index = 0
@@ -247,8 +247,8 @@ fn find_incident_edge(
   let v1 = xf_b.apply(vb[index])
   let v2 = xf_b.apply(vb[(index + 1) % n])
   [
-    { v: v1, id: (reference_edge << 8) | (index % 256) },
-    { v: v2, id: (reference_edge << 8) | ((index + 1) % n % 256) },
+    { v: v1, id: (reference_edge << 8) | (index % 256), },
+    { v: v2, id: (reference_edge << 8) | ((index + 1) % n % 256), },
   ]
 }
 
@@ -257,7 +257,7 @@ fn clip_segment_to_line(
   v_in : Array[ClipVertex],
   normal : Vec2,
   offset : Double,
-  id_base : Int,
+  id_base : Int32,
 ) -> Array[ClipVertex] {
   let out : Array[ClipVertex] = []
   let d0 = normal.dot(v_in[0].v) - offset

@@ -21,7 +21,7 @@ pub struct BodySnapshot {
   rotation : Double
   shape : Shape
   asleep : Bool
-  user_data : Int
+  user_data : Int32
 }
 
 ///|
@@ -45,7 +45,7 @@ pub fn BodySnapshot::asleep(self : BodySnapshot) -> Bool {
 }
 
 ///|
-pub fn BodySnapshot::user_data(self : BodySnapshot) -> Int {
+pub fn BodySnapshot::user_data(self : BodySnapshot) -> Int32 {
   self.user_data
 }
 
@@ -56,7 +56,7 @@ pub struct World {
   mut arbiters : Array[Arbiter]
   joints : Array[Joint]
   mut gravity : Vec2
-  mut velocity_iterations : Int
+  mut velocity_iterations : Int32
   mut time : Double
   mut sleep_enabled : Bool
 }
@@ -83,7 +83,7 @@ pub fn World::with_gravity(gx : Double, gy : Double) -> World {
 
 ///|
 /// Add a body and return its index, which joints and arbiters refer to.
-pub fn World::add_body(self : World, body : Body) -> Int {
+pub fn World::add_body(self : World, body : Body) -> Int32 {
   let index = self.bodies.length()
   body.sync_aabb()
   self.bodies.push(body)
@@ -99,8 +99,8 @@ pub fn World::add_joint(self : World, joint : Joint) -> Unit {
 /// Connect the centers of two bodies with a rigid distance joint.
 pub fn World::add_distance_joint(
   self : World,
-  body_a : Int,
-  body_b : Int,
+  body_a : Int32,
+  body_b : Int32,
 ) -> Unit {
   self.add_joint(Joint::Distance(DistanceJoint::between(self, body_a, body_b)))
 }
@@ -109,8 +109,8 @@ pub fn World::add_distance_joint(
 /// Pin two bodies together at a world-space anchor (a hinge).
 pub fn World::add_revolve_joint(
   self : World,
-  body_a : Int,
-  body_b : Int,
+  body_a : Int32,
+  body_b : Int32,
   anchor : Vec2,
 ) -> Unit {
   self.add_joint(Joint::Revolve(RevolveJoint::at(self, body_a, body_b, anchor)))
@@ -120,8 +120,8 @@ pub fn World::add_revolve_joint(
 /// Pin two bodies together, using one local anchor per body.
 pub fn World::add_revolve_joint_local(
   self : World,
-  body_a : Int,
-  body_b : Int,
+  body_a : Int32,
+  body_b : Int32,
   local_anchor_a : Vec2,
   local_anchor_b : Vec2,
 ) -> Unit {
@@ -133,22 +133,22 @@ pub fn World::add_revolve_joint_local(
 }
 
 ///|
-pub fn World::body(self : World, index : Int) -> Body {
+pub fn World::body(self : World, index : Int32) -> Body {
   self.bodies[index]
 }
 
 ///|
-pub fn World::body_count(self : World) -> Int {
+pub fn World::body_count(self : World) -> Int32 {
   self.bodies.length()
 }
 
 ///|
-pub fn World::arbiter_count(self : World) -> Int {
+pub fn World::arbiter_count(self : World) -> Int32 {
   self.arbiters.length()
 }
 
 ///|
-pub fn World::contact_count(self : World) -> Int {
+pub fn World::contact_count(self : World) -> Int32 {
   let mut total = 0
   for arbiter in self.arbiters {
     total = total + arbiter.contacts().length()
@@ -170,7 +170,7 @@ pub fn World::set_gravity(self : World, gravity : Vec2) -> Unit {
 }
 
 ///|
-pub fn World::set_velocity_iterations(self : World, iterations : Int) -> Unit {
+pub fn World::set_velocity_iterations(self : World, iterations : Int32) -> Unit {
   self.velocity_iterations = iterations
 }
 
@@ -190,9 +190,9 @@ pub fn World::time(self : World) -> Double {
 /// Sorting by the lower AABB bound and sweeping is a sort-and-sweep
 /// broadphase: linear for sparse scenes, and stable across runs because ties
 /// are broken by body index.
-fn World::compute_pairs(self : World) -> Array[(Int, Int)] {
+fn World::compute_pairs(self : World) -> Array[(Int32, Int32)] {
   let n = self.bodies.length()
-  let order : Array[Int] = []
+  let order : Array[Int32] = []
   for i in 0..<n {
     order.push(i)
   }
@@ -211,7 +211,7 @@ fn World::compute_pairs(self : World) -> Array[(Int, Int)] {
       j = j - 1
     }
   }
-  let pairs : Array[(Int, Int)] = []
+  let pairs : Array[(Int32, Int32)] = []
   for a_index in 0..<n {
     let i = order[a_index]
     let box_a = self.bodies[i].world_aabb
@@ -356,7 +356,7 @@ pub fn World::step(self : World, dt : Double) -> Unit {
 
 ///|
 /// Advance by `steps` fixed-size steps.
-pub fn World::run(self : World, steps : Int, dt : Double) -> Unit {
+pub fn World::run(self : World, steps : Int32, dt : Double) -> Unit {
   for _step in 0..<steps {
     self.step(dt)
   }

@@ -30,7 +30,7 @@ pub struct Body {
   mut allow_sleep : Bool
   mut awake : Bool
   mut sleep_time : Double
-  mut user_data : Int
+  mut user_data : Int32
   mut world_aabb : Aabb
 }
 
@@ -155,7 +155,7 @@ pub fn Body::restitution(self : Body) -> Double {
 
 ///|
 /// Free integer tag, handy for render colors and test bookkeeping.
-pub fn Body::user_data(self : Body) -> Int {
+pub fn Body::user_data(self : Body) -> Int32 {
   self.user_data
 }
 
@@ -380,7 +380,7 @@ pub fn Body::with_allow_sleep(self : Body, allow : Bool) -> Body {
 }
 
 ///|
-pub fn Body::with_user_data(self : Body, data : Int) -> Body {
+pub fn Body::with_user_data(self : Body, data : Int32) -> Body {
   self.user_data = data
   self
 }

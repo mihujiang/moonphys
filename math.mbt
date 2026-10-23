@@ -28,17 +28,17 @@ pub struct Vec2 {
 
 ///|
 pub fn Vec2::new(x : Double, y : Double) -> Vec2 {
-  { x, y }
+  { x, y, }
 }
 
 ///|
 pub fn Vec2::zero() -> Vec2 {
-  { x: 0.0, y: 0.0 }
+  { x: 0.0, y: 0.0, }
 }
 
 ///|
 pub fn Vec2::splat(v : Double) -> Vec2 {
-  { x: v, y: v }
+  { x: v, y: v, }
 }
 
 ///|

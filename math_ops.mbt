@@ -51,12 +51,12 @@ pub struct Mat22 {
 pub fn Mat22::from_angle(angle : Double) -> Mat22 {
   let c = @math.cos(angle)
   let s = @math.sin(angle)
-  { c1: Vec2::new(c, s), c2: Vec2::new(-s, c) }
+  { c1: Vec2::new(c, s), c2: Vec2::new(-s, c), }
 }
 
 ///|
 pub fn Mat22::identity() -> Mat22 {
-  { c1: Vec2::new(1.0, 0.0), c2: Vec2::new(0.0, 1.0) }
+  { c1: Vec2::new(1.0, 0.0), c2: Vec2::new(0.0, 1.0), }
 }
 
 ///|
@@ -66,12 +66,12 @@ pub fn Mat22::mul_vec(self : Mat22, v : Vec2) -> Vec2 {
 
 ///|
 pub fn Mat22::transpose(self : Mat22) -> Mat22 {
-  { c1: Vec2::new(self.c1.x, self.c2.x), c2: Vec2::new(self.c1.y, self.c2.y) }
+  { c1: Vec2::new(self.c1.x, self.c2.x), c2: Vec2::new(self.c1.y, self.c2.y), }
 }
 
 ///|
 pub fn Mat22::abs(self : Mat22) -> Mat22 {
-  { c1: self.c1.abs(), c2: self.c2.abs() }
+  { c1: self.c1.abs(), c2: self.c2.abs(), }
 }
 
 ///|
@@ -83,7 +83,7 @@ pub struct Transform {
 
 ///|
 pub fn Transform::new(position : Vec2, rotation : Double) -> Transform {
-  { position, rotation }
+  { position, rotation, }
 }
 
 ///|

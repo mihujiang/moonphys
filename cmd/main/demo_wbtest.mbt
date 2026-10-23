@@ -1,6 +1,6 @@
 ///|
 /// Guards for the demo scenes: they must stay finite and inside the camera.
-fn check_scene(world : @moonphys.World, frames : Int) -> Unit raise {
+fn check_scene(world : @moonphys.World, frames : Int32) -> Unit raise {
   for _frame in 0..<frames {
     world.step(DT)
   }

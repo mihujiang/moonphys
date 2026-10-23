@@ -1,7 +1,7 @@
 ///|
 /// Result of a ray cast against the world.
 pub struct RayHit {
-  body_index : Int
+  body_index : Int32
   point : Vec2
   normal : Vec2
   distance : Double
@@ -9,7 +9,7 @@ pub struct RayHit {
 
 ///|
 /// Index of the body that was hit.
-pub fn RayHit::body_index(self : RayHit) -> Int {
+pub fn RayHit::body_index(self : RayHit) -> Int32 {
   self.body_index
 }
 
@@ -177,8 +177,8 @@ pub fn World::ray_cast(
 
 ///|
 /// All body indices whose AABB overlaps `region`, in ascending order.
-pub fn World::query_aabb(self : World, region : Aabb) -> Array[Int] {
-  let out : Array[Int] = []
+pub fn World::query_aabb(self : World, region : Aabb) -> Array[Int32] {
+  let out : Array[Int32] = []
   let mut i = 0
   while i < self.bodies.length() {
     if self.bodies[i].world_aabb.overlaps(region) {
@@ -191,8 +191,8 @@ pub fn World::query_aabb(self : World, region : Aabb) -> Array[Int] {
 
 ///|
 /// Bodies whose shape contains the point, most useful for picking.
-pub fn World::query_point(self : World, point : Vec2) -> Array[Int] {
-  let out : Array[Int] = []
+pub fn World::query_point(self : World, point : Vec2) -> Array[Int32] {
+  let out : Array[Int32] = []
   let mut i = 0
   while i < self.bodies.length() {
     if self.bodies[i].contains_point(point) {
