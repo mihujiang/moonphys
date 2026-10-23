@@ -380,6 +380,7 @@ pub fn World::add_soft_distance_joint(Self, Int32, Int32, Double, Double) -> Uni
 pub fn World::arbiter_count(Self) -> Int32
 pub fn World::body(Self, Int32) -> Body
 pub fn World::body_count(Self) -> Int32
+pub fn World::builder() -> WorldBuilder
 pub fn World::contact_count(Self) -> Int32
 pub fn World::gravity(Self) -> Vec2
 pub fn World::joint_count(Self) -> Int32
@@ -392,12 +393,27 @@ pub fn World::set_gravity(Self, Vec2) -> Unit
 pub fn World::set_sleep_enabled(Self, Bool) -> Unit
 pub fn World::set_velocity_iterations(Self, Int32) -> Unit
 pub fn World::snapshot(Self) -> Array[BodySnapshot]
+pub fn World::snapshot_json(Self) -> String
 pub fn World::state_hash(Self) -> UInt64
 pub fn World::step(Self, Double) -> Unit
 pub fn World::time(Self) -> Double
 pub fn World::total_kinetic_energy(Self) -> Double
 pub fn World::wake_all(Self) -> Unit
 pub fn World::with_gravity(Double, Double) -> Self
+
+pub struct WorldBuilder {
+  world : World
+  mut last : Int32
+}
+pub fn WorldBuilder::ball(Self, Double, Double, Double) -> Self
+pub fn WorldBuilder::body(Self, Body) -> Self
+pub fn WorldBuilder::box(Self, Double, Double, Double, Double) -> Self
+pub fn WorldBuilder::build(Self) -> World
+pub fn WorldBuilder::gravity(Self, Double, Double) -> Self
+pub fn WorldBuilder::ground(Self, Double) -> Self
+pub fn WorldBuilder::iterations(Self, Int32) -> Self
+pub fn WorldBuilder::last_index(Self) -> Int32
+pub fn WorldBuilder::sleep_enabled(Self, Bool) -> Self
 
 // Type aliases
 

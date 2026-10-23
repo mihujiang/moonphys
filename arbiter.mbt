@@ -31,6 +31,7 @@ pub struct Arbiter {
 }
 
 ///|
+/// Create an arbiter for a body pair from freshly detected contact points.
 pub fn Arbiter::new(
   body_a : Int32,
   body_b : Int32,
@@ -55,21 +56,25 @@ pub fn Arbiter::new(
 }
 
 ///|
+/// Index of the first body: the lower index of the pair.
 pub fn Arbiter::body_a(self : Arbiter) -> Int32 {
   self.body_a
 }
 
 ///|
+/// Index of the second body: the higher index of the pair.
 pub fn Arbiter::body_b(self : Arbiter) -> Int32 {
   self.body_b
 }
 
 ///|
+/// Contact points of this pair, each carrying its warm-started impulse.
 pub fn Arbiter::contacts(self : Arbiter) -> Array[ContactPoint] {
   self.contacts
 }
 
 ///|
+/// Whether the last update produced at least one contact point.
 pub fn Arbiter::is_touching(self : Arbiter) -> Bool {
   self.contacts.length() > 0
 }

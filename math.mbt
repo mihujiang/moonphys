@@ -27,31 +27,37 @@ pub struct Vec2 {
 }
 
 ///|
+/// Build a vector from its components.
 pub fn Vec2::new(x : Double, y : Double) -> Vec2 {
   { x, y, }
 }
 
 ///|
+/// The zero vector.
 pub fn Vec2::zero() -> Vec2 {
   { x: 0.0, y: 0.0, }
 }
 
 ///|
+/// A vector with both components set to v.
 pub fn Vec2::splat(v : Double) -> Vec2 {
   { x: v, y: v, }
 }
 
 ///|
+/// Horizontal component.
 pub fn Vec2::x(self : Vec2) -> Double {
   self.x
 }
 
 ///|
+/// Vertical component.
 pub fn Vec2::y(self : Vec2) -> Double {
   self.y
 }
 
 ///|
+/// Dot product.
 pub fn Vec2::dot(self : Vec2, other : Vec2) -> Double {
   self.x * other.x + self.y * other.y
 }
@@ -109,6 +115,7 @@ pub fn Vec2::normalize_or(self : Vec2, fallback : Vec2) -> Vec2 {
 }
 
 ///|
+/// Multiply both components by s.
 pub fn Vec2::scale(self : Vec2, s : Double) -> Vec2 {
   Vec2::new(self.x * s, self.y * s)
 }
@@ -148,11 +155,13 @@ pub fn Vec2::abs(self : Vec2) -> Vec2 {
 }
 
 ///|
+/// Component-wise minimum.
 pub fn Vec2::min(self : Vec2, other : Vec2) -> Vec2 {
   Vec2::new(self.x.min(other.x), self.y.min(other.y))
 }
 
 ///|
+/// Component-wise maximum.
 pub fn Vec2::max(self : Vec2, other : Vec2) -> Vec2 {
   Vec2::new(self.x.max(other.x), self.y.max(other.y))
 }

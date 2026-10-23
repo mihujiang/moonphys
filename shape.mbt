@@ -6,11 +6,13 @@ pub struct Aabb {
 }
 
 ///|
+/// Build a box from its lower and upper corners.
 pub fn Aabb::new(min : Vec2, max : Vec2) -> Aabb {
   { min, max, }
 }
 
 ///|
+/// Whether the two boxes intersect; touching counts.
 pub fn Aabb::overlaps(self : Aabb, other : Aabb) -> Bool {
   if other.min.x > self.max.x || other.max.x < self.min.x {
     return false
@@ -22,6 +24,7 @@ pub fn Aabb::overlaps(self : Aabb, other : Aabb) -> Bool {
 }
 
 ///|
+/// Whether p lies inside the box.
 pub fn Aabb::contains_point(self : Aabb, p : Vec2) -> Bool {
   p.x >= self.min.x &&
   p.x <= self.max.x &&
@@ -30,6 +33,7 @@ pub fn Aabb::contains_point(self : Aabb, p : Vec2) -> Bool {
 }
 
 ///|
+/// Smallest box covering both inputs.
 pub fn Aabb::union(self : Aabb, other : Aabb) -> Aabb {
   { min: self.min.min(other.min), max: self.max.max(other.max), }
 }
@@ -41,26 +45,31 @@ pub fn Aabb::expanded(self : Aabb, margin : Double) -> Aabb {
 }
 
 ///|
+/// Centre point of the box.
 pub fn Aabb::center(self : Aabb) -> Vec2 {
   (self.min + self.max).scale(0.5)
 }
 
 ///|
+/// Width along x.
 pub fn Aabb::width(self : Aabb) -> Double {
   self.max.x - self.min.x
 }
 
 ///|
+/// Height along y.
 pub fn Aabb::height(self : Aabb) -> Double {
   self.max.y - self.min.y
 }
 
 ///|
+/// Lower corner.
 pub fn Aabb::min(self : Aabb) -> Vec2 {
   self.min
 }
 
 ///|
+/// Upper corner.
 pub fn Aabb::max(self : Aabb) -> Vec2 {
   self.max
 }
@@ -74,16 +83,19 @@ pub struct MassData {
 }
 
 ///|
+/// Total mass.
 pub fn MassData::mass(self : MassData) -> Double {
   self.mass
 }
 
 ///|
+/// Rotational inertia about the centre of mass.
 pub fn MassData::inertia(self : MassData) -> Double {
   self.inertia
 }
 
 ///|
+/// Centre of mass in local space.
 pub fn MassData::center(self : MassData) -> Vec2 {
   self.center
 }
@@ -99,6 +111,7 @@ pub enum Shape {
 }
 
 ///|
+/// A circle of the given radius.
 pub fn Shape::circle(radius : Double) -> Shape {
   Circle(radius)
 }
@@ -230,6 +243,7 @@ pub fn Shape::vertices(self : Shape) -> Array[Vec2] {
 }
 
 ///|
+/// Whether this shape is a circle.
 pub fn Shape::is_circle(self : Shape) -> Bool {
   match self {
     Circle(_) => true

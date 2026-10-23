@@ -23,6 +23,7 @@ pub struct DistanceJoint {
 }
 
 ///|
+/// Pin the distance between two world anchors to length.
 pub fn DistanceJoint::new(
   body_a : Int32,
   body_b : Int32,
@@ -64,6 +65,7 @@ pub fn DistanceJoint::between(
 }
 
 ///|
+/// Target distance between the two anchors.
 pub fn DistanceJoint::length(self : DistanceJoint) -> Double {
   self.length
 }
@@ -99,6 +101,7 @@ pub fn DistanceJoint::anchors(
 }
 
 ///|
+/// Compute the effective mass and the velocity bias for this step.
 pub fn DistanceJoint::pre_step(
   self : DistanceJoint,
   bodies : Array[Body],
@@ -145,6 +148,7 @@ pub fn DistanceJoint::pre_step(
 }
 
 ///|
+/// Apply one iteration of the distance constraint.
 pub fn DistanceJoint::solve_velocity(
   self : DistanceJoint,
   bodies : Array[Body],
@@ -184,6 +188,7 @@ pub struct RevolveJoint {
 }
 
 ///|
+/// Pin two local anchors to the same world point, leaving rotation free.
 pub fn RevolveJoint::new(
   body_a : Int32,
   body_b : Int32,
@@ -234,6 +239,7 @@ fn solve22(k11 : Double, k12 : Double, k22 : Double, v : Vec2) -> Vec2 {
 }
 
 ///|
+/// Compute the 2x2 effective mass and the position bias.
 pub fn RevolveJoint::pre_step(
   self : RevolveJoint,
   bodies : Array[Body],
@@ -270,6 +276,7 @@ pub fn RevolveJoint::pre_step(
 }
 
 ///|
+/// Apply one iteration of the hinge constraint.
 pub fn RevolveJoint::solve_velocity(
   self : RevolveJoint,
   bodies : Array[Body],
@@ -303,6 +310,7 @@ pub enum Joint {
 }
 
 ///|
+/// Let the joint prepare its effective mass and bias for this step.
 pub fn Joint::pre_step(
   self : Joint,
   bodies : Array[Body],
@@ -318,6 +326,7 @@ pub fn Joint::pre_step(
 }
 
 ///|
+/// Let the joint apply one velocity iteration.
 pub fn Joint::solve_velocity(self : Joint, bodies : Array[Body]) -> Unit {
   match self {
     Distance(joint) => joint.solve_velocity(bodies)

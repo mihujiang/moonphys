@@ -15,21 +15,25 @@ pub struct ContactPoint {
 }
 
 ///|
+/// World-space contact position.
 pub fn ContactPoint::position(self : ContactPoint) -> Vec2 {
   self.position
 }
 
 ///|
+/// Contact normal, pointing from body A towards body B.
 pub fn ContactPoint::normal(self : ContactPoint) -> Vec2 {
   self.normal
 }
 
 ///|
+/// Signed gap between the shapes; negative while they overlap.
 pub fn ContactPoint::separation(self : ContactPoint) -> Double {
   self.separation
 }
 
 ///|
+/// Stable id of the contacting features, used to migrate warm-start impulses.
 pub fn ContactPoint::feature_id(self : ContactPoint) -> Int32 {
   self.feature_id
 }

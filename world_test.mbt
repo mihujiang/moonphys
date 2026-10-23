@@ -142,7 +142,57 @@ test "state digest is pinned and repeatable" {
   let replay = stack_scene()
   replay.run(300, FRAME)
   assert_eq(replay.state_hash(), digest)
-  assert_eq(digest.to_string(), "1704958725921205918")
+  assert_eq(digest.to_string(), "5172919354809653977")
+}
+
+///|
+/// A resting pile has to fall asleep as a whole, and something landing on it has
+/// to wake it again. Waking on "the neighbour is awake" alone deadlocks this: the
+/// first body to sleep is woken by its still-awake neighbour every step, so the
+/// pile never settles at all.
+test "a stack falls asleep and wakes on impact" {
+  let world = @moonphys.World::new()
+  ignore(
+    world.add_body(
+      @moonphys.Body::fixed(@moonphys.Shape::box(10.0, 0.5)).at(0.0, -0.5),
+    ),
+  )
+  for i in 0..<3 {
+    ignore(
+      world.add_body(
+        @moonphys.Body::box(0.45, 0.45).at(0.0, 0.45 + i.to_double() * 0.9),
+      ),
+    )
+  }
+  world.run(300, FRAME)
+  let mut asleep = 0
+  for i in 1..<world.body_count() {
+    if !world.body(i).awake() {
+      asleep = asleep + 1
+    }
+  }
+  assert_eq(asleep, 3)
+  // A sleeping body must not drift.
+  let resting = world.body(2).position().y()
+  world.run(60, FRAME)
+  assert_eq(world.body(2).position().y(), resting)
+  // Dropping a ball on the pile wakes every body it touches; the pile is
+  // allowed to fall asleep again afterwards, so sample the peak.
+  ignore(world.add_body(@moonphys.Body::ball(0.3).at(0.0, 6.0)))
+  let mut peak = 0
+  for _step in 0..<120 {
+    world.step(FRAME)
+    let mut awake = 0
+    for i in 1..<world.body_count() {
+      if world.body(i).awake() {
+        awake = awake + 1
+      }
+    }
+    if awake > peak {
+      peak = awake
+    }
+  }
+  assert_true(peak >= 3)
 }
 
 ///|

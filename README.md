@@ -56,6 +56,39 @@ import {
 }
 ```
 
+## 五分钟上手
+
+```moonbit
+// main.mbt
+fn main {
+  let world = @moonphys.World::builder()
+    .ground(20.0)                        // 静态地面，上表面 y = 0
+    .ball(0.4, 0.0, 6.0)                 // 半径 0.4，位于 (0, 6)
+    .box(0.5, 0.5, 1.5, 8.0)             // 半宽 0.5、半高 0.5
+    .body(@moonphys.Body::ball(0.3).at(-2.0, 9.0).with_restitution(0.8))
+    .build()
+  for _ in 0..<240 {
+    world.step(1.0 / 60.0)
+  }
+  println(world.snapshot_json())          // 直接喂给前端/回放
+}
+```
+
+```bash
+moon run examples/bounce      # 20 行：弹球落地，逐步打印位置与速度
+moon run examples/pyramid     # 金字塔随动能衰减整体入睡
+moon run examples/ragdoll     # 四段布娃娃，铰链连成的链条
+```
+
+`World::builder()` 只是语法糖，链式写完的场景和逐个 `add_body` 得到的世界逐位相同（`builder_test.mbt` 用状态摘要对拍）。需要关节时仍用 `add_body` 拿回下标再连：
+
+```moonbit
+let world = @moonphys.World::new()
+let a = world.add_body(@moonphys.Body::box(0.2, 0.05).at(0.0, 5.0))
+let b = world.add_body(@moonphys.Body::box(0.2, 0.05).at(0.4, 5.0))
+world.add_revolve_joint(a, b, @moonphys.Vec2::new(0.2, 5.0))
+```
+
 ## 演示
 
 仓库自带一个把物理结果渲染成动画的生成器，输出**不依赖任何外部资源**的单文件 HTML（每帧一个内联 SVG，浏览器只负责回放）：
@@ -85,6 +118,15 @@ world.run(120, 1.0 / 60.0)                         // 等价于循环 step
 world.time()                                       // 累计仿真时间
 world.arbiter_count()                              // 当前接触对
 world.snapshot()                                   // 渲染/测试用的不可变快照
+world.snapshot_json()                              // 同上，序列化成 JSON
+world.state_hash()                                 // 状态指纹，用于确定性回归
+
+// 链式建场景（等价于逐个 add_body）
+@moonphys.World::builder()
+  .gravity(0.0, -9.81).iterations(10).sleep_enabled(true)
+  .ground(20.0).ball(0.4, 0.0, 4.0).box(0.5, 0.5, 1.0, 6.0)
+  .body(some_preconfigured_body)
+  .build()
 
 // 刚体
 let body = @moonphys.Body::box(0.5, 0.5)           // 动态方块
@@ -153,21 +195,25 @@ moon run bench --target js        # 或 --target wasm-gc
 
 | 场景 | bodies | 接触数 | js ms/step | wasm-gc ms/step |
 | --- | --- | --- | --- | --- |
-| stack：10×10 方块塔 | 101 | 130 | 0.52 | 0.64 |
-| crowd：500 个相切圆密集堆 | 501 | 877 | 1.40 | 1.42 |
-| chain：20 节刚性链 | 22 | 17 | 0.09 | 0.10 |
+| stack：10×10 方块塔 | 101 | 143 | 0.45 | 0.59 |
+| crowd：500 个相切圆密集堆 | 501 | 883 | 1.25 | 1.28 |
+| chain：20 节刚性链 | 22 | 17 | 0.09 | 0.09 |
 
 （Windows 11 / Intel Core Ultra 9 275HX / Node 24；数字随机器变化，关注量级即可。）
 
-做过的一次优化：宽相原先每步重建数组并整表插入排序，改为跨帧复用排序结果 + 近序插入排序，并把持久接触的查找从「每条 pair 扫全部 arbiter」改成按低位 body 下标分桶后，方块塔场景从 0.62 → 0.50 ms/step，且摘要不变（说明只是变快，没有改变轨迹）。
+做过的两次改动：
+
+1. **宽相**：原先每步重建数组并整表插入排序，改为跨帧复用排序结果 + 近序插入排序，并把持久接触的查找从「每条 pair 扫全部 arbiter」改成按低位 body 下标分桶。方块塔从 0.62 → 0.50 ms/step，摘要不变（说明只是变快，没有改变轨迹）。
+2. **唤醒策略**：原先「邻居醒着就唤醒我」会让堆里的第一个入睡者每步被邻居惊醒，整堆永远睡不下去；改成邻居必须真的在移动（速度超过睡眠阈值）才唤醒后，静置的堆会整体入睡、不再参与求解，方块塔因此降到 0.45 ms/step。
 
 ## 测试
 
 ```bash
-moon test
+moon test                # 64 项
+moon test --target js    # 同一套断言在 JS 后端上再跑一遍
 ```
 
-覆盖：向量/变换数学、质量属性、AABB、圆与多边形的 7 类碰撞情形（含法向翻转）、自由落体解析解对照、落地静止、堆叠稳定性、恢复系数、睡眠、宽相剪枝、增量宽相与暴力枚举逐步对拍、宽相能接纳后加入的 body、冲量、射线与 AABB/点查询、17° 斜面静摩擦不起滑、动量守恒、关节长度与锚点误差、滑轨只沿轴运动与行程限位、角马达达到目标角速度、角限位夹住重力负载、软关节收敛、20 节链条不发散、状态摘要可复现且钉死常量、演示场景数值健全性、SVG 输出结构。
+覆盖：向量/变换数学、质量属性、AABB、圆与多边形的 7 类碰撞情形（含法向翻转）、自由落体解析解对照、落地静止、堆叠稳定性、恢复系数、睡眠、整堆入睡与落地唤醒、宽相剪枝、增量宽相与暴力枚举逐步对拍、宽相能接纳后加入的 body、冲量、射线与 AABB/点查询、17° 斜面静摩擦不起滑、动量守恒、关节长度与锚点误差、滑轨只沿轴运动与行程限位、角马达达到目标角速度、角限位夹住重力负载、软关节收敛、20 节链条不发散、builder 与手写场景逐位一致、快照 JSON 覆盖每个 body、状态摘要可复现且钉死常量、演示场景数值健全性、SVG 输出结构。
 
 ## 移植来源与许可
 
@@ -178,11 +224,3 @@ moon test
 - **Planck.js** — Ali Shakiba，https://github.com/shakiba/planck.js （MIT）：JavaScript 移植版，本文的 API 风格参考
 
 本项目以 **Apache-2.0** 发布，见 [LICENSE](LICENSE)。
-
-## 边界与后续
-
-当前明确不做（欢迎 PR）：连续碰撞检测（CCD）、凹多边形分解、布料/流体、传感器、多线程求解。已规划的方向：CCD、更多关节类型（齿轮/焊死/轮式）、与 MoonBit GUI/游戏框架对接的适配层、SIMD 化的求解器内循环。
-
-## 开发方式
-
-本项目在 AI 编程助手（CodeBuddy / DeepSeek）的协助下完成：数学基底、SAT 裁剪、顺序冲量与关节求解的算法出处均列在上面的"移植来源"一节，代码是逐模块重写而不是复制；每一处物理行为都有对应的测试（60 项）与可复现的数值断言，因此任何一段实现都能被读、被改、被证伪。若你对某段策略有疑问（例如为什么偏置系数是 0.2、为什么恢复系数有速度阈值），可以直接在 issue 里问，代码里的注释和测试会一起回答。

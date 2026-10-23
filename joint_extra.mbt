@@ -61,6 +61,7 @@ pub struct PrismaticJoint {
 }
 
 ///|
+/// Lock the bodies to a rail through anchor along axis.
 pub fn PrismaticJoint::new(
   body_a : Int32,
   body_b : Int32,
@@ -139,6 +140,7 @@ pub fn PrismaticJoint::with_motor(
 }
 
 ///|
+/// Compute effective mass, soft stop bias and motor bias.
 pub fn PrismaticJoint::pre_step(
   self : PrismaticJoint,
   bodies : Array[Body],
@@ -213,6 +215,7 @@ pub fn PrismaticJoint::pre_step(
 }
 
 ///|
+/// Apply one iteration of the rail, limit and motor constraints.
 pub fn PrismaticJoint::solve_velocity(
   self : PrismaticJoint,
   bodies : Array[Body],
@@ -321,6 +324,7 @@ pub struct AngleLimitJoint {
 }
 
 ///|
+/// Keep the relative rotation inside the lower and upper bounds, in radians.
 pub fn AngleLimitJoint::new(
   body_a : Int32,
   body_b : Int32,
@@ -359,6 +363,7 @@ pub fn AngleLimitJoint::at(
 }
 
 ///|
+/// Prepare the angular mass, the stop bias and the projection bias.
 pub fn AngleLimitJoint::pre_step(
   self : AngleLimitJoint,
   bodies : Array[Body],
@@ -392,6 +397,7 @@ pub fn AngleLimitJoint::pre_step(
 }
 
 ///|
+/// Apply one iteration of the angular limit.
 pub fn AngleLimitJoint::solve_velocity(
   self : AngleLimitJoint,
   bodies : Array[Body],
@@ -464,6 +470,7 @@ pub struct MotorJoint {
 }
 
 ///|
+/// Drive the relative angular velocity towards target_speed with at most max_torque.
 pub fn MotorJoint::new(
   body_a : Int32,
   body_b : Int32,
@@ -482,6 +489,7 @@ pub fn MotorJoint::new(
 }
 
 ///|
+/// Prepare the angular mass and clamp the motor torque.
 pub fn MotorJoint::pre_step(
   self : MotorJoint,
   bodies : Array[Body],
@@ -499,6 +507,7 @@ pub fn MotorJoint::pre_step(
 }
 
 ///|
+/// Apply one iteration of the motor constraint.
 pub fn MotorJoint::solve_velocity(
   self : MotorJoint,
   bodies : Array[Body],

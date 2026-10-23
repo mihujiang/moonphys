@@ -25,26 +25,31 @@ pub struct BodySnapshot {
 }
 
 ///|
+/// Centre of mass position when the snapshot was taken.
 pub fn BodySnapshot::position(self : BodySnapshot) -> Vec2 {
   self.position
 }
 
 ///|
+/// Rotation when the snapshot was taken.
 pub fn BodySnapshot::rotation(self : BodySnapshot) -> Double {
   self.rotation
 }
 
 ///|
+/// Shape of the body.
 pub fn BodySnapshot::shape(self : BodySnapshot) -> Shape {
   self.shape
 }
 
 ///|
+/// Whether the body was asleep.
 pub fn BodySnapshot::asleep(self : BodySnapshot) -> Bool {
   self.asleep
 }
 
 ///|
+/// User tag of the body.
 pub fn BodySnapshot::user_data(self : BodySnapshot) -> Int32 {
   self.user_data
 }
@@ -70,6 +75,7 @@ pub struct World {
 }
 
 ///|
+/// An empty world with Earth gravity and ten solver iterations.
 pub fn World::new() -> World {
   {
     bodies: [],
@@ -86,6 +92,7 @@ pub fn World::new() -> World {
 }
 
 ///|
+/// An empty world with custom gravity, given per component.
 pub fn World::with_gravity(gx : Double, gy : Double) -> World {
   let world = World::new()
   world.gravity = Vec2::new(gx, gy)
@@ -102,6 +109,7 @@ pub fn World::add_body(self : World, body : Body) -> Int32 {
 }
 
 ///|
+/// Attach a joint; joints are solved after the contacts on every step.
 pub fn World::add_joint(self : World, joint : Joint) -> Unit {
   self.joints.push(joint)
 }
@@ -224,26 +232,31 @@ pub fn World::add_soft_distance_joint(
 }
 
 ///|
+/// Number of joints.
 pub fn World::joint_count(self : World) -> Int32 {
   self.joints.length()
 }
 
 ///|
+/// Access a body by index.
 pub fn World::body(self : World, index : Int32) -> Body {
   self.bodies[index]
 }
 
 ///|
+/// Number of bodies.
 pub fn World::body_count(self : World) -> Int32 {
   self.bodies.length()
 }
 
 ///|
+/// Number of touching pairs found by the last step.
 pub fn World::arbiter_count(self : World) -> Int32 {
   self.arbiters.length()
 }
 
 ///|
+/// Number of contact points found by the last step.
 pub fn World::contact_count(self : World) -> Int32 {
   let mut total = 0
   for arbiter in self.arbiters {
@@ -280,11 +293,13 @@ fn mix_state(hash : UInt64, value : Double) -> UInt64 {
 }
 
 ///|
+/// Current gravity vector.
 pub fn World::gravity(self : World) -> Vec2 {
   self.gravity
 }
 
 ///|
+/// Change gravity; wakes every body.
 pub fn World::set_gravity(self : World, gravity : Vec2) -> Unit {
   self.gravity = gravity
   for body in self.bodies {
@@ -293,16 +308,19 @@ pub fn World::set_gravity(self : World, gravity : Vec2) -> Unit {
 }
 
 ///|
+/// How many solver iterations each step runs.
 pub fn World::set_velocity_iterations(self : World, iterations : Int32) -> Unit {
   self.velocity_iterations = iterations
 }
 
 ///|
+/// Turn automatic sleeping on or off.
 pub fn World::set_sleep_enabled(self : World, enabled : Bool) -> Unit {
   self.sleep_enabled = enabled
 }
 
 ///|
+/// Simulated time in seconds.
 pub fn World::time(self : World) -> Double {
   self.time
 }
@@ -387,6 +405,22 @@ fn World::index_arbiters(self : World) -> Unit {
 }
 
 ///|
+/// Whether `body` is awake *and* moving fast enough to disturb a sleeping
+/// neighbour.
+///
+/// Waking on "awake" alone would deadlock sleep in a stack: every body touches
+/// an awake body, so the first one to fall asleep is woken again on the next
+/// step and the pile never settles. A resting neighbour has nothing to
+/// transmit, so the pile can fall asleep together.
+fn moves(body : Body) -> Bool {
+  body.awake() &&
+  (
+    body.velocity.length() > SLEEP_LINEAR_TOLERANCE ||
+    body.angular_velocity.abs() > SLEEP_ANGULAR_TOLERANCE
+  )
+}
+
+///|
 /// The arbiter that carried `(index_a, index_b)` on the previous step, if any.
 fn World::find_arbiter(
   self : World,
@@ -438,13 +472,13 @@ pub fn World::step(self : World, dt : Double) -> Unit {
           )
       }
       if body_a.is_dynamic() &&
-        body_a.awake() &&
+        moves(body_a) &&
         body_b.is_dynamic() &&
         !body_b.awake() {
         body_b.wake()
       }
       if body_b.is_dynamic() &&
-        body_b.awake() &&
+        moves(body_b) &&
         body_a.is_dynamic() &&
         !body_a.awake() {
         body_a.wake()
@@ -528,6 +562,7 @@ pub fn World::run(self : World, steps : Int32, dt : Double) -> Unit {
 }
 
 ///|
+/// Copy the visual state of every body: shape, pose, sleep flag and tag.
 pub fn World::snapshot(self : World) -> Array[BodySnapshot] {
   let out : Array[BodySnapshot] = []
   for body in self.bodies {

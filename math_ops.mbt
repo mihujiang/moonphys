@@ -48,6 +48,7 @@ pub struct Mat22 {
 }
 
 ///|
+/// Rotation matrix for angle radians.
 pub fn Mat22::from_angle(angle : Double) -> Mat22 {
   let c = @math.cos(angle)
   let s = @math.sin(angle)
@@ -55,21 +56,25 @@ pub fn Mat22::from_angle(angle : Double) -> Mat22 {
 }
 
 ///|
+/// Identity matrix.
 pub fn Mat22::identity() -> Mat22 {
   { c1: Vec2::new(1.0, 0.0), c2: Vec2::new(0.0, 1.0), }
 }
 
 ///|
+/// Apply the matrix to a vector.
 pub fn Mat22::mul_vec(self : Mat22, v : Vec2) -> Vec2 {
   self.c1.scale(v.x) + self.c2.scale(v.y)
 }
 
 ///|
+/// Transpose of the matrix.
 pub fn Mat22::transpose(self : Mat22) -> Mat22 {
   { c1: Vec2::new(self.c1.x, self.c2.x), c2: Vec2::new(self.c1.y, self.c2.y), }
 }
 
 ///|
+/// Absolute value of every entry, used to build the friction matrix.
 pub fn Mat22::abs(self : Mat22) -> Mat22 {
   { c1: self.c1.abs(), c2: self.c2.abs(), }
 }
@@ -82,6 +87,7 @@ pub struct Transform {
 }
 
 ///|
+/// Build a transform from a position and a rotation.
 pub fn Transform::new(position : Vec2, rotation : Double) -> Transform {
   { position, rotation, }
 }

@@ -35,6 +35,7 @@ pub struct Body {
 }
 
 ///|
+/// Create a body of body_type with the given shape and default material.
 pub fn Body::new(shape : Shape, body_type : BodyType) -> Body {
   let data = shape.mass_data(1.0)
   let mut local_shape = shape
@@ -109,46 +110,55 @@ pub fn Body::ball(radius : Double) -> Body {
 }
 
 ///|
+/// The collision shape.
 pub fn Body::shape(self : Body) -> Shape {
   self.shape
 }
 
 ///|
+/// Centre of mass position in world space.
 pub fn Body::position(self : Body) -> Vec2 {
   self.position
 }
 
 ///|
+/// Rotation in radians.
 pub fn Body::rotation(self : Body) -> Double {
   self.rotation
 }
 
 ///|
+/// Linear velocity of the centre of mass.
 pub fn Body::velocity(self : Body) -> Vec2 {
   self.velocity
 }
 
 ///|
+/// Angular velocity in radians per second.
 pub fn Body::angular_velocity(self : Body) -> Double {
   self.angular_velocity
 }
 
 ///|
+/// Mass in kilograms; zero means infinite mass (static).
 pub fn Body::mass(self : Body) -> Double {
   self.mass
 }
 
 ///|
+/// Rotational inertia; zero means infinite inertia (static).
 pub fn Body::inertia(self : Body) -> Double {
   self.inertia
 }
 
 ///|
+/// Coulomb friction coefficient.
 pub fn Body::friction(self : Body) -> Double {
   self.friction
 }
 
 ///|
+/// Restitution, 0 is inelastic, 1 is perfectly elastic.
 pub fn Body::restitution(self : Body) -> Double {
   self.restitution
 }
@@ -160,6 +170,7 @@ pub fn Body::user_data(self : Body) -> Int32 {
 }
 
 ///|
+/// Whether the body has infinite mass and never moves.
 pub fn Body::is_static(self : Body) -> Bool {
   match self.body_type {
     BodyType::Static => true
@@ -168,16 +179,19 @@ pub fn Body::is_static(self : Body) -> Bool {
 }
 
 ///|
+/// Whether the body is moved by forces, gravity and collisions.
 pub fn Body::is_dynamic(self : Body) -> Bool {
   !self.is_static()
 }
 
 ///|
+/// Position and rotation packed into a Transform.
 pub fn Body::transform(self : Body) -> Transform {
   Transform::new(self.position, self.rotation)
 }
 
 ///|
+/// World-space bounding box, synced at the end of every step.
 pub fn Body::aabb(self : Body) -> Aabb {
   self.world_aabb
 }
@@ -189,11 +203,13 @@ pub fn Body::sync_aabb(self : Body) -> Unit {
 }
 
 ///|
+/// Whether the body is currently simulated, that is not sleeping.
 pub fn Body::awake(self : Body) -> Bool {
   self.awake
 }
 
 ///|
+/// Wake the body so it is simulated again.
 pub fn Body::wake(self : Body) -> Unit {
   if self.is_dynamic() {
     self.awake = true
@@ -202,6 +218,7 @@ pub fn Body::wake(self : Body) -> Unit {
 }
 
 ///|
+/// Put the body to sleep until something touches it.
 pub fn Body::sleep(self : Body) -> Unit {
   if self.is_dynamic() {
     self.awake = false
@@ -260,6 +277,7 @@ pub fn Body::contains_point(self : Body, point : Vec2) -> Bool {
 }
 
 ///|
+/// Accumulate a force for the next step; it is cleared after integration.
 pub fn Body::apply_force(self : Body, force : Vec2) -> Unit {
   if self.is_dynamic() {
     self.force = self.force + force
@@ -268,6 +286,7 @@ pub fn Body::apply_force(self : Body, force : Vec2) -> Unit {
 }
 
 ///|
+/// Accumulate a torque for the next step.
 pub fn Body::apply_torque(self : Body, torque : Double) -> Unit {
   if self.is_dynamic() {
     self.torque = self.torque + torque
@@ -288,6 +307,7 @@ pub fn Body::apply_impulse(self : Body, impulse : Vec2, point : Vec2) -> Unit {
 }
 
 ///|
+/// Change the angular velocity by impulse / inertia right away.
 pub fn Body::apply_angular_impulse(self : Body, impulse : Double) -> Unit {
   if self.is_dynamic() {
     self.angular_velocity = self.angular_velocity + self.inv_inertia * impulse
@@ -312,6 +332,7 @@ pub fn Body::kinetic_energy(self : Body) -> Double {
 }
 
 ///|
+/// Drop the accumulated force and torque.
 pub fn Body::clear_forces(self : Body) -> Unit {
   self.force = Vec2::zero()
   self.torque = 0.0
@@ -326,6 +347,7 @@ pub fn Body::at(self : Body, x : Double, y : Double) -> Body {
 }
 
 ///|
+/// Builder: set the initial rotation in radians.
 pub fn Body::with_rotation(self : Body, angle : Double) -> Body {
   self.rotation = angle
   self.sync_aabb()
@@ -333,36 +355,42 @@ pub fn Body::with_rotation(self : Body, angle : Double) -> Body {
 }
 
 ///|
+/// Builder: set the initial linear velocity.
 pub fn Body::with_velocity(self : Body, vx : Double, vy : Double) -> Body {
   self.velocity = Vec2::new(vx, vy)
   self
 }
 
 ///|
+/// Builder: set the initial angular velocity.
 pub fn Body::with_angular_velocity(self : Body, w : Double) -> Body {
   self.angular_velocity = w
   self
 }
 
 ///|
+/// Builder: set the friction coefficient.
 pub fn Body::with_friction(self : Body, friction : Double) -> Body {
   self.friction = friction
   self
 }
 
 ///|
+/// Builder: set the restitution.
 pub fn Body::with_restitution(self : Body, restitution : Double) -> Body {
   self.restitution = restitution
   self
 }
 
 ///|
+/// Builder: set the density used to derive mass and inertia.
 pub fn Body::with_density(self : Body, density : Double) -> Body {
   self.set_density(density)
   self
 }
 
 ///|
+/// Builder: set linear and angular damping per second.
 pub fn Body::with_damping(
   self : Body,
   linear : Double,
@@ -374,12 +402,14 @@ pub fn Body::with_damping(
 }
 
 ///|
+/// Builder: opt in or out of automatic sleeping.
 pub fn Body::with_allow_sleep(self : Body, allow : Bool) -> Body {
   self.allow_sleep = allow
   self
 }
 
 ///|
+/// Builder: attach an integer tag, handy for game code.
 pub fn Body::with_user_data(self : Body, data : Int32) -> Body {
   self.user_data = data
   self

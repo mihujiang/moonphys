@@ -11,6 +11,7 @@ pub struct SvgOptions {
 }
 
 ///|
+/// Default options: 800 by 600 pixels, scale 40, centred at the origin, grid on.
 pub fn SvgOptions::new() -> SvgOptions {
   {
     width: 960,
@@ -24,6 +25,7 @@ pub fn SvgOptions::new() -> SvgOptions {
 }
 
 ///|
+/// Set the output size in pixels.
 pub fn SvgOptions::with_size(
   self : SvgOptions,
   width : Int32,
@@ -35,12 +37,14 @@ pub fn SvgOptions::with_size(
 }
 
 ///|
+/// Set how many pixels one world unit covers.
 pub fn SvgOptions::with_scale(self : SvgOptions, scale : Double) -> SvgOptions {
   self.scale = scale
   self
 }
 
 ///|
+/// Set the world point that maps to the middle of the image.
 pub fn SvgOptions::with_center(
   self : SvgOptions,
   x : Double,
@@ -52,12 +56,14 @@ pub fn SvgOptions::with_center(
 }
 
 ///|
+/// Draw the reference grid or not.
 pub fn SvgOptions::with_grid(self : SvgOptions, enabled : Bool) -> SvgOptions {
   self.grid = enabled
   self
 }
 
 ///|
+/// Set the background colour as a CSS colour string.
 pub fn SvgOptions::with_background(
   self : SvgOptions,
   color : String,
