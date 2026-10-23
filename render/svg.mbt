@@ -181,7 +181,7 @@ fn write_circle(
 ///|
 /// Render one frame as an inline SVG element.
 pub fn frame_svg(world : @moonphys.World, options : SvgOptions) -> String {
-  let sb = StringBuilder::new()
+  let sb = StringBuilder()
   sb.write_object(
     "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 \{options.width} \{options.height}\" preserveAspectRatio=\"xMidYMid meet\">\n",
   )
