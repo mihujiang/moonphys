@@ -59,6 +59,14 @@ pub struct World {
   mut velocity_iterations : Int32
   mut time : Double
   mut sleep_enabled : Bool
+  /// Bodies sorted by `aabb.min.x`, carried over between steps so the
+  /// broadphase only has to re-sort a nearly sorted array.
+  sorted : Array[Int32]
+  /// Reused pair buffer: one allocation for the lifetime of the world.
+  pairs : Array[(Int32, Int32)]
+  /// `arbiters` grouped by their lower body index, rebuilt every step so the
+  /// persistent-contact lookup is O(1) per body instead of a linear scan.
+  arbiter_buckets : Array[Array[Arbiter]]
 }
 
 ///|
@@ -71,6 +79,9 @@ pub fn World::new() -> World {
     velocity_iterations: 10,
     time: 0.0,
     sleep_enabled: true,
+    sorted: [],
+    pairs: [],
+    arbiter_buckets: [],
   }
 }
 
@@ -242,6 +253,33 @@ pub fn World::contact_count(self : World) -> Int32 {
 }
 
 ///|
+/// Bit-exact digest of the simulated state: every position, rotation and
+/// velocity is folded in as raw bits, so two runs that diverge by one ulp
+/// produce different digests.
+///
+/// This is what makes determinism testable: the same scene has to print the same
+/// digest on `native`, `js` and `wasm-gc`, because the engine uses no randomness
+/// and no hash-ordered iteration.
+pub fn World::state_hash(self : World) -> UInt64 {
+  let mut hash : UInt64 = 0xcbf29ce484222325UL
+  for body in self.bodies {
+    hash = mix_state(hash, body.position.x)
+    hash = mix_state(hash, body.position.y)
+    hash = mix_state(hash, body.rotation)
+    hash = mix_state(hash, body.velocity.x)
+    hash = mix_state(hash, body.velocity.y)
+    hash = mix_state(hash, body.angular_velocity)
+  }
+  hash
+}
+
+///|
+/// FNV-1a style mixing: xor the raw double bits in, then multiply.
+fn mix_state(hash : UInt64, value : Double) -> UInt64 {
+  (hash ^ value.reinterpret_as_uint64()) * 0x100000001b3UL
+}
+
+///|
 pub fn World::gravity(self : World) -> Vec2 {
   self.gravity
 }
@@ -277,31 +315,41 @@ pub fn World::time(self : World) -> Double {
 /// are broken by body index.
 fn World::compute_pairs(self : World) -> Array[(Int32, Int32)] {
   let n = self.bodies.length()
-  let order : Array[Int32] = []
-  for i in 0..<n {
-    order.push(i)
+  let order = self.sorted
+  // Bodies are only ever appended, so the cached order needs at most a tail
+  // extension; nothing has to be rebuilt from scratch.
+  while order.length() > n {
+    ignore(order.pop())
   }
-  for i in 1..<n {
+  while order.length() < n {
+    order.push(order.length())
+  }
+  // Incremental insertion sort. The array was sorted by the previous step and
+  // bodies move by a fraction of their size per step, so almost every element
+  // is already in place and the total work stays O(n).
+  let count = order.length()
+  for i in 1..<count {
+    let cur = order[i]
+    let cur_x = self.bodies[cur].world_aabb.min.x
     let mut j = i
     while j > 0 {
-      let cur = order[j]
       let prev = order[j - 1]
-      let cur_x = self.bodies[cur].world_aabb.min.x
       let prev_x = self.bodies[prev].world_aabb.min.x
       if cur_x > prev_x || (cur_x == prev_x && cur > prev) {
         break
       }
       order[j] = prev
-      order[j - 1] = cur
       j = j - 1
     }
+    order[j] = cur
   }
-  let pairs : Array[(Int32, Int32)] = []
-  for a_index in 0..<n {
+  let pairs = self.pairs
+  pairs.clear()
+  for a_index in 0..<count {
     let i = order[a_index]
     let box_a = self.bodies[i].world_aabb
     let mut b_index = a_index + 1
-    while b_index < n {
+    while b_index < count {
       let j = order[b_index]
       let box_b = self.bodies[j].world_aabb
       if box_b.min.x > box_a.max.x {
@@ -322,6 +370,38 @@ fn World::compute_pairs(self : World) -> Array[(Int32, Int32)] {
 }
 
 ///|
+/// Index the previous step's arbiters by their lower body index, so looking up
+/// the arbiter of a pair is a short scan of one bucket instead of a scan over
+/// every arbiter in the world.
+fn World::index_arbiters(self : World) -> Unit {
+  let buckets = self.arbiter_buckets
+  while buckets.length() < self.bodies.length() {
+    buckets.push([])
+  }
+  for bucket in buckets {
+    bucket.clear()
+  }
+  for arbiter in self.arbiters {
+    buckets[arbiter.body_a()].push(arbiter)
+  }
+}
+
+///|
+/// The arbiter that carried `(index_a, index_b)` on the previous step, if any.
+fn World::find_arbiter(
+  self : World,
+  index_a : Int32,
+  index_b : Int32,
+) -> Arbiter? {
+  for arbiter in self.arbiter_buckets[index_a] {
+    if arbiter.body_b() == index_b {
+      return Some(arbiter)
+    }
+  }
+  None
+}
+
+///|
 /// Advance the simulation by `dt` seconds.
 pub fn World::step(self : World, dt : Double) -> Unit {
   if dt <= 0.0 {
@@ -332,6 +412,7 @@ pub fn World::step(self : World, dt : Double) -> Unit {
     body.sync_aabb()
   }
   let pairs = self.compute_pairs()
+  self.index_arbiters()
   let next_arbiters : Array[Arbiter] = []
   for pair in pairs {
     let (index_a, index_b) = pair
@@ -346,19 +427,15 @@ pub fn World::step(self : World, dt : Double) -> Unit {
     if points.length() > 0 {
       let friction = (body_a.friction * body_b.friction).sqrt()
       let restitution = body_a.restitution.max(body_b.restitution)
-      let mut reused = false
-      for arbiter in self.arbiters {
-        if arbiter.body_a() == index_a && arbiter.body_b() == index_b {
+      match self.find_arbiter(index_a, index_b) {
+        Some(arbiter) => {
           arbiter.update(points, friction, restitution)
           next_arbiters.push(arbiter)
-          reused = true
-          break
         }
-      }
-      if !reused {
-        next_arbiters.push(
-          Arbiter::new(index_a, index_b, points, friction, restitution),
-        )
+        None =>
+          next_arbiters.push(
+            Arbiter::new(index_a, index_b, points, friction, restitution),
+          )
       }
       if body_a.is_dynamic() &&
         body_a.awake() &&

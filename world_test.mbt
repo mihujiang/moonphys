@@ -127,6 +127,25 @@ test "identical scenes replay bit for bit" {
 }
 
 ///|
+/// The state digest folds every position, rotation and velocity in as raw bits,
+/// so this assertion is a canary: it fails if a single ulp changes anywhere in
+/// the solver, the broadphase order or the integration.
+///
+/// It is also the cross-target determinism check. `moon test --target js` and
+/// `moon test --target wasm-gc` run the very same assertion, so a float path
+/// that differs between backends shows up as a failure instead of a silent
+/// drift. Regenerate the constant only when the physics is meant to change.
+test "state digest is pinned and repeatable" {
+  let world = stack_scene()
+  world.run(300, FRAME)
+  let digest = world.state_hash()
+  let replay = stack_scene()
+  replay.run(300, FRAME)
+  assert_eq(replay.state_hash(), digest)
+  assert_eq(digest.to_string(), "1704958725921205918")
+}
+
+///|
 test "sleeping bodies are reused until something moves" {
   let world = @moonphys.World::new()
   ignore(ground(world))

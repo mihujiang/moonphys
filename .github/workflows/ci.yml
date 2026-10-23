@@ -56,5 +56,18 @@ jobs:
       - name: Test on JavaScript target
         run: moon test --target js
 
+      - name: Cross target determinism
+        shell: bash
+        run: |
+          # The state digest of every bench scene must be identical on both
+          # backends; any float path that differs shows up as a diff here.
+          moon run bench --target wasm-gc | grep -oE 'hash=[0-9]+' > hash_wasm.txt
+          moon run bench --target js | grep -oE 'hash=[0-9]+' > hash_js.txt
+          cat hash_wasm.txt
+          diff -u hash_wasm.txt hash_js.txt
+
+      - name: Benchmark smoke test
+        run: moon run bench --target js
+
       - name: Build the demo generator
         run: moon build cmd/main --target js

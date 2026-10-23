@@ -1,0 +1,6 @@
+import {
+  "weopqrst/moonphys",
+  "moonbitlang/core/bench" @clock,
+}
+
+pkgtype(kind: "executable")

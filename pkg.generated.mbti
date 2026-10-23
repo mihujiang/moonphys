@@ -363,6 +363,9 @@ pub struct World {
   mut velocity_iterations : Int32
   mut time : Double
   mut sleep_enabled : Bool
+  sorted : Array[Int32]
+  pairs : Array[(Int32, Int32)]
+  arbiter_buckets : Array[Array[Arbiter]]
 }
 pub fn World::add_angle_limit_joint(Self, Int32, Int32, Double, Double) -> AngleLimitJoint
 pub fn World::add_angle_limit_joint_at(Self, Int32, Int32, Vec2, Double, Double) -> AngleLimitJoint
@@ -389,6 +392,7 @@ pub fn World::set_gravity(Self, Vec2) -> Unit
 pub fn World::set_sleep_enabled(Self, Bool) -> Unit
 pub fn World::set_velocity_iterations(Self, Int32) -> Unit
 pub fn World::snapshot(Self) -> Array[BodySnapshot]
+pub fn World::state_hash(Self) -> UInt64
 pub fn World::step(Self, Double) -> Unit
 pub fn World::time(Self) -> Double
 pub fn World::total_kinetic_energy(Self) -> Double

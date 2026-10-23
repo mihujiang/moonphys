@@ -12,4 +12,4 @@ keywords = [ "physics", "rigid-body", "collision", "simulation", "game" ]
 
 preferred_target = "wasm-gc"
 
-description = "A deterministic 2D rigid body physics engine in pure MoonBit: SAT collision detection, sequential impulse solver with warm starting, Coulomb friction, revolute and distance joints, sleeping, and SVG rendering."
+description = "A deterministic 2D rigid body physics engine in pure MoonBit: SAT collision detection, sequential impulse solver with warm starting, Coulomb friction, revolute/distance/prismatic/angle-limit/motor joints, sleeping, ray casts, and SVG rendering."
