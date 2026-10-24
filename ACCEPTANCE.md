@@ -40,6 +40,14 @@
 
 ## 复现步骤
 
+一条命令版（两条验收路径都跑：克隆仓库 + 从 mooncakes 装包）：
+
+```powershell
+powershell -File tools/acceptance.ps1
+```
+
+手动版：
+
 ```bash
 moon check --deny-warn
 moon fmt --check
@@ -60,6 +68,21 @@ python -m http.server 8123     # 然后打开 /docs/playground/
 msedge --headless=new --virtual-time-budget=6000 --dump-dom \
   "http://127.0.0.1:8123/docs/playground/?selftest=1" | grep "<title>"
 ```
+
+## 本轮验收记录（2026-10-24）
+
+`tools/acceptance.ps1` 的 14 项检查全部通过：
+
+- 路径 A（从 GitHub 克隆后复跑）：`fmt --check`、`check --deny-warn`、`moon test`、
+  `moon test --target js`、三个 examples、按 README 构造的 `bench`（两个 target 的
+  `hash=` 逐位相同）、wasm 构建 + playground 冒烟（提交产物与新构建各一次）、
+  `engine.wasm` 版本与 `moon.mod` 一致、`docs/index.html` 为 UTF-8 且 720 帧、`moon package`。
+- 路径 B（从 mooncakes 安装 0.2.0）：独立模块里 5 个测试（README 片段 / 落球静止 /
+  射线与区域查询 / 五类关节不发散 / 状态摘要可复现）在 wasm-gc 与 js 上各 5/5。
+
+本轮发现并修复：提交的 `docs/playground/engine.wasm` 内嵌版本仍是 `0.1.0`
+（改版本号后忘记重建，功能无影响但产物与源码不同步），已用 0.2.0 重建；
+「产物版本必须等于 `moon.mod`」也写进了验收脚本，避免再漏。
 
 ## 已知限制（写在明处）
 

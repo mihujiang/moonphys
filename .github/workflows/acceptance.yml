@@ -1,0 +1,38 @@
+name: Acceptance
+
+# Runs tools/acceptance.ps1: clone the published repo and run every documented
+# command, then install the released package from mooncakes into a separate
+# module and exercise its public API. This is the "reviewer simulation" and it
+# is deliberately not on every push — it clones, builds twice and downloads from
+# the registry, so it runs weekly and on demand.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 3 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  acceptance:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Set up MoonBit
+        run: |
+          curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash
+          echo "$HOME/.moon/bin" >> $GITHUB_PATH
+
+      - name: Print toolchain version
+        run: moon version --all
+
+      - name: Run acceptance script
+        shell: pwsh
+        run: ./tools/acceptance.ps1

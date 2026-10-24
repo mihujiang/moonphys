@@ -252,7 +252,8 @@ moon run bench --target js        # 或 --target wasm-gc
 ```bash
 moon test                # 64 项
 moon test --target js    # 同一套断言在 JS 后端上再跑一遍
-node tools/check-playground.mjs   # playground 的 wasm：24 个导出 + 6 场景各 180 步
+node tools/check-playground.mjs    # playground 的 wasm：24 个导出 + 6 场景各 180 步
+powershell -File tools/acceptance.ps1   # 模拟验收：克隆仓库 + 从 mooncakes 装包，各跑一遍
 ```
 
 覆盖：向量/变换数学、质量属性、AABB、圆与多边形的 7 类碰撞情形（含法向翻转）、自由落体解析解对照、落地静止、堆叠稳定性、恢复系数、睡眠、整堆入睡与落地唤醒、宽相剪枝、增量宽相与暴力枚举逐步对拍、宽相能接纳后加入的 body、冲量、射线与 AABB/点查询、17° 斜面静摩擦不起滑、动量守恒、关节长度与锚点误差、滑轨只沿轴运动与行程限位、角马达达到目标角速度、角限位夹住重力负载、软关节收敛、20 节链条不发散、builder 与手写场景逐位一致、快照 JSON 覆盖每个 body、状态摘要可复现且钉死常量、演示场景数值健全性、SVG 输出结构。
