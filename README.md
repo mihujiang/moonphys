@@ -7,6 +7,7 @@
 **纯 MoonBit 实现的确定性 2D 刚体物理引擎** — 用 SAT 做碰撞检测，用顺序冲量法求解接触，支持摩擦、恢复系数、关节、睡眠，并能把每一帧渲染成 SVG。
 
 文档：[五分钟上手](#五分钟上手) · [API 速览](#api-速览) · [架构与取舍](docs/ARCHITECTURE.md) · [CHANGELOG](CHANGELOG.md)
+演示：[SVG 回放](https://mihujiang.github.io/moonphys/) · [可交互 playground](https://mihujiang.github.io/moonphys/playground/)
 
 一个 2D 物理引擎是游戏引擎、物理教学和机器人仿真里最基础的一块拼图，MoonBit 生态此前没有：`mooncakes` 上的 `chipmunk`、`box2d`、`verlet`、`aabb`、`collision` 等关键词全部为空。`moonphys` 填的是这个空位，而不是又一个业务工具。
 
@@ -110,7 +111,7 @@ moon run cmd/main --target js > docs/index.html
 2. **Five link chain · double pendulum** — 5 节链条与双摆，铰链约束在重力下的混沌运动。
 3. **Linear actuator · angular motor · soft rope** — 电动滑轨推箱、角马达带动的旋转臂与软弹簧绳、重力压在角限位上的跷跷板。
 
-在线预览：<https://mihujiang.github.io/moonphys/>。`docs/` 由 `.github/workflows/pages.yml` 在每次推送后部署；首次需要在仓库 Settings → Pages 把 Source 选成 **GitHub Actions**（工作流自己建不了站点，没有 admin 权限），之后无需再动。
+在线预览：<https://mihujiang.github.io/moonphys/>。`docs/` 由 `.github/workflows/pages.yml` 在每次变动后自动部署（fork 后首次需要在仓库 Settings → Pages 把 Source 选成 **GitHub Actions**，工作流自己建不了站点）。
 
 ### 可交互 playground（wasm-gc）
 

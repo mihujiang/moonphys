@@ -11,8 +11,12 @@
 | mooncakes | <https://mooncakes.io/docs/weopqrst/moonphys> |
 | 演示（Pages） | <https://mihujiang.github.io/moonphys/> · 交互版 <https://mihujiang.github.io/moonphys/playground/> |
 
-> Pages 需要仓库 owner 在 Settings → Pages → Source 里选一次 **GitHub Actions**
-> （工作流拿不到建站权限）。之后每次推送由 `.github/workflows/pages.yml` 自动部署。
+> Pages 已于 2026-10-24 启用（Source = GitHub Actions），两个地址均实测 200：
+> 根页 2,929,022 字节 / 720 帧 / 3 场景，`/playground/` 的 `?selftest=1` 返回
+> `scenes=6 bodies=253 contacts=24 asleep=15`，`engine.wasm` 的
+> `Content-Type` 为 `application/wasm`。之后每次 `docs/` 变动由
+> `.github/workflows/pages.yml` 自动部署；fork 后首次仍需 owner 在 Settings → Pages
+> 选一次 GitHub Actions（工作流拿不到建站权限）。
 
 ## 六条硬指标
 
@@ -91,5 +95,6 @@ msedge --headless=new --virtual-time-budget=6000 --dump-dom \
 - **`file:` 协议打不开 playground**：浏览器不允许 `fetch` 本地 `.wasm`，页面会给出明确提示。
 - **6 层以上金字塔有残余抖动**（0.1–0.5 m/s，不入睡）：需要块求解器或位置求解器，
   已记在 `PLAN` 的后续项里，不在 0.2.0 承诺范围内。
-- **Pages 首次启用需要 owner 点一次开关**：工作流自建站点会被 GitHub 拒绝
-  （`Resource not accessible by integration`），这是权限边界，不是代码缺陷。
+- **fork 后首次部署仍需 owner 点一次开关**：工作流自建站点会被 GitHub 拒绝
+  （`Resource not accessible by integration`），这是权限边界，不是代码缺陷；
+  本仓库已完成这一步。
