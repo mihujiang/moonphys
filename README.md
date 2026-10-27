@@ -6,7 +6,7 @@
 
 **纯 MoonBit 实现的确定性 2D 刚体物理引擎** — 用 SAT 做碰撞检测，用顺序冲量法求解接触，支持摩擦、恢复系数、关节、睡眠，并能把每一帧渲染成 SVG。
 
-文档：[五分钟上手](#五分钟上手) · [API 速览](#api-速览) · [架构与取舍](docs/ARCHITECTURE.md) · [CHANGELOG](CHANGELOG.md)
+文档：[五分钟上手](#五分钟上手) · [API 速览](#api-速览) · [架构与取舍](docs/ARCHITECTURE.md) · [验收记录](ACCEPTANCE.md) · [CHANGELOG](CHANGELOG.md)
 演示：[SVG 回放](https://mihujiang.github.io/moonphys/) · [可交互 playground](https://mihujiang.github.io/moonphys/playground/)
 
 一个 2D 物理引擎是游戏引擎、物理教学和机器人仿真里最基础的一块拼图，MoonBit 生态此前没有：`mooncakes` 上的 `chipmunk`、`box2d`、`verlet`、`aabb`、`collision` 等关键词全部为空。`moonphys` 填的是这个空位，而不是又一个业务工具。
@@ -258,26 +258,6 @@ powershell -File tools/acceptance.ps1   # 模拟验收：克隆仓库 + 从 moon
 ```
 
 覆盖：向量/变换数学、质量属性、AABB、圆与多边形的 7 类碰撞情形（含法向翻转）、自由落体解析解对照、落地静止、堆叠稳定性、恢复系数、睡眠、整堆入睡与落地唤醒、宽相剪枝、增量宽相与暴力枚举逐步对拍、宽相能接纳后加入的 body、冲量、射线与 AABB/点查询、17° 斜面静摩擦不起滑、动量守恒、关节长度与锚点误差、滑轨只沿轴运动与行程限位、角马达达到目标角速度、角限位夹住重力负载、软关节收敛、20 节链条不发散、builder 与手写场景逐位一致、快照 JSON 覆盖每个 body、状态摘要可复现且钉死常量、演示场景数值健全性、SVG 输出结构。
-
-## 开发方式：AI 参与，但每步都要有证据
-
-这个项目是人与 AI 结对做的，先把分工和验收规则写清楚，避免「看起来能用」：
-
-- **人定目标与边界**：里程碑、范围（2D、凸多边形、不做软体/流体）、性能与正确性的口径。
-- **AI 写实现**：引擎、测试、文档、CI、SVG 回放与 wasm playground。
-- **验收只看命令**：每个里程碑结束必须同时通过 `moon fmt --check`、`moon check --deny-warn`、`moon test`、`moon test --target js`、`moon package`；写进 README 的数字必须先在本机跑出来。
-
-针对几类容易「自说自话」的地方，具体做法是：
-
-1. **正确性用解析解对拍**：自由落体对照 `½gt²`，斜面滑落对照 `g(sinθ − μcosθ)`（误差 < 5%），等质量对撞对照动量守恒（误差 < 1e-9），而不是「看着像对的」。
-2. **确定性用指纹盯**：`state_hash()` 把原始 bit 折进 FNV-1a，测试钉死 300 步后的常量；CI 再让 bench 在 wasm-gc 与 js 上各跑一遍并 diff `hash=` 行。
-3. **性能必须同时看摘要**：优化后如果变快但摘要变了，说明轨迹被改动了，按 bug 处理——M3 的宽相优化就是靠这条确认「只是变快」。
-4. **演示要能被机器检查**：`docs/playground/?selftest=1` 把自检结果写进 `document.title`，无头浏览器 `--dump-dom` 抓一行就能判定；`tools/check-playground.mjs` 在 CI 里核对 24 个导出与 6 个场景。
-5. **人读 diff**：AI 的总结不作为证据，改动逐条过 diff，数字与结论都可以用上面的命令复现（清单见[架构文档](docs/ARCHITECTURE.md#怎么验证这些说法)）。
-
-AI 在这个项目里踩过、并已修掉的真实问题（都补了回归测试或 CI 步骤）：把 wasm 包声明成 `executable` 导致 `#export_name` 进不了导出表（`[4219]`）；睡眠唤醒条件写成「邻居醒着就唤醒」让整堆永远睡不着；位置修正没有上限导致深穿透被弹飞；M6 重新生成演示页时发现旧文件是 PowerShell 重定向写出的 UTF-16，已改回 UTF-8。
-
-一句话概括这套流程：**规格 → 实现 → 数值对拍 → 跨 target 摘要 → 人读 diff**，任何一环没有输出就不算完成。
 
 ## 移植来源与许可
 
