@@ -384,11 +384,13 @@ pub fn World::builder() -> WorldBuilder
 pub fn World::contact_count(Self) -> Int32
 pub fn World::gravity(Self) -> Vec2
 pub fn World::joint_count(Self) -> Int32
+pub fn World::load_state(Self, Bytes) -> Bool
 pub fn World::new() -> Self
 pub fn World::query_aabb(Self, Aabb) -> Array[Int32]
 pub fn World::query_point(Self, Vec2) -> Array[Int32]
 pub fn World::ray_cast(Self, Vec2, Vec2, Double) -> RayHit?
 pub fn World::run(Self, Int32, Double) -> Unit
+pub fn World::save_state(Self) -> Bytes
 pub fn World::set_gravity(Self, Vec2) -> Unit
 pub fn World::set_sleep_enabled(Self, Bool) -> Unit
 pub fn World::set_velocity_iterations(Self, Int32) -> Unit
